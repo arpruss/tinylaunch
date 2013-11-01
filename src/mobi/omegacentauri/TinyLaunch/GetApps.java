@@ -1,5 +1,8 @@
 package mobi.omegacentauri.TinyLaunch;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -17,6 +20,10 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.graphics.Bitmap;
+import android.graphics.Bitmap.CompressFormat;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.view.View;
@@ -58,16 +65,21 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 		Intent launchIntent = new Intent(Intent.ACTION_MAIN);
 		launchIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 		
+		MyCache.deleteIcons(context);
+
 		List<ResolveInfo> list = 
 			pm.queryIntentActivities(launchIntent, 0);
+		
+		boolean icons = context.options.getBoolean(Options.PREF_ICONS, false);
 		
 		for (int i = 0 ; i < list.size() ; i++) {
 			publishProgress(i, list.size());
 			
 			ResolveInfo info = list.get(i);
-			
-			String component = (new ComponentName(info.activityInfo.packageName, 
-					info.activityInfo.name)).flattenToString();
+
+			ComponentName cn = new ComponentName(info.activityInfo.packageName, 
+					info.activityInfo.name);
+			String component = cn.flattenToString();
 			String name = (String) info.activityInfo.loadLabel(pm);
 			if (name.equals("Angry Birds")) {
 				if(info.activityInfo.packageName.startsWith("com.rovio.angrybirdsrio")) {
@@ -77,9 +89,28 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 					name = name + " Seasons";
 				}
 			}
-
 			
 			apps.add(new AppData(component, name));
+			
+			if (icons) {
+				File iconFile = MyCache.getIconFile(context, component);
+				
+				try {
+					Drawable d = pm.getResourcesForActivity(cn)
+							.getDrawable(pm.getPackageInfo(
+									info.activityInfo.packageName, 
+									0).applicationInfo.icon);
+					if (d instanceof BitmapDrawable) {
+						Bitmap bmp = ((BitmapDrawable)d).getBitmap();
+						FileOutputStream out = new FileOutputStream(iconFile);
+						bmp.compress(CompressFormat.PNG, 100, out);
+						out.close();
+					}
+				} catch (Exception e) {
+					Log.e("TinyLaunch", ""+e);
+					iconFile.delete();
+				}
+			}
 			
 		}
 		
@@ -111,6 +142,8 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 	protected void onPostExecute(ArrayList<AppData> data) {
 		
 		context.loadList(data);
+		context.options.edit().putBoolean(Options.PREF_PREV_ICONS, 
+				context.options.getBoolean(Options.PREF_ICONS, false)).commit();
 		
 		progress.dismiss();
 	}
