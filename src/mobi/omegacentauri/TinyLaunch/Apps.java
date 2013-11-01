@@ -36,6 +36,7 @@ import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -49,6 +50,7 @@ public class Apps extends Activity {
 	ListView list;
 	Resources res;
 	Map<String,AppData> map;
+	private SharedPreferences options;
 	final static String PREF_APPS = "apps";
 	
 	public static void saveIcon(Context c, String componentName) {
@@ -152,8 +154,18 @@ public class Apps extends Activity {
 				}
 
 				final AppData a = curCatData.get(position); 
+				final boolean icons = options.getBoolean(Options.PREF_ICONS, false);
+				
 				TextView tv = (TextView)v.findViewById(R.id.text);
 				tv.setText(a.name);
+				ImageView img = (ImageView)v.findViewById(R.id.icon);
+				if (icons) {
+					img.setVisibility(View.VISIBLE);
+					//TODO
+				}
+				else {
+					img.setVisibility(View.GONE);
+				}
 				
 				// TODO: icon
 				return v;
@@ -184,7 +196,9 @@ public class Apps extends Activity {
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+
+    	options = PreferenceManager.getDefaultSharedPreferences(this);
+
         setContentView(R.layout.apps);
         
         list = (ListView)findViewById(R.id.apps);
