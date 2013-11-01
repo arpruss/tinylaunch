@@ -11,6 +11,7 @@ import android.preference.PreferenceManager;
 public class Options extends PreferenceActivity {
 	public final static String PREF_TILE = "tile";
 	public final static String PREF_ICONS = "icons";
+	public final static String PREF_PREV_ICONS = "prevIcons";
 	
 	@Override
 	public void onCreate(Bundle icicle) {

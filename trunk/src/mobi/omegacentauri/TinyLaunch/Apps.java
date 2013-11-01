@@ -1,6 +1,8 @@
 package mobi.omegacentauri.TinyLaunch;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,6 +23,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.res.Resources;
+import android.content.res.Resources.NotFoundException;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.drawable.BitmapDrawable;
@@ -50,48 +53,10 @@ public class Apps extends Activity {
 	ListView list;
 	Resources res;
 	Map<String,AppData> map;
-	private SharedPreferences options;
+	public SharedPreferences options;
 	final static String PREF_APPS = "apps";
+	private PackageManager packageManager;
 	
-	public static void saveIcon(Context c, String componentName) {
-		if (componentName.startsWith(" "))
-			return;
-		
-		deleteIcon(c, componentName);
-		try {
-			ComponentName cn = ComponentName.unflattenFromString(componentName);
-			String packageName = cn.getPackageName();
-			PackageManager pm = c.getPackageManager();
-			Resources res = pm.getResourcesForActivity(cn);
-			Drawable icon = res.getDrawable(pm.getPackageInfo(packageName, 0).applicationInfo.icon);
-//			Drawable icon = pm.getPackageInfo(packageName, 0).applicationInfo.loadIcon(c.getPackageManager());
-			if (icon instanceof BitmapDrawable) {
-				Bitmap bmp = ((BitmapDrawable)icon).getBitmap();
-				Log.v("TinyLaunch", "icon "+bmp.getWidth()+"x"+bmp.getHeight());
-				File iconFile = getIconFile(c, componentName);
-				FileOutputStream out = new FileOutputStream(iconFile);
-				bmp.compress(CompressFormat.PNG, 100, out);
-				out.close();
-				Log.v("TinyLaunch", "saved icon");
-			}
-		} catch (Exception e) {
-			deleteIcon(c, componentName);
-		}		
-	}
-	
-	public static File getIconFile(Context c, String componentName) {
-		return new File(c.getCacheDir(), 
-				Uri.encode(componentName)+".png");
-	}
-	
-	public static void deleteIcon(Context c, String componentName) {
-		if (componentName.startsWith(" "))
-			return;
-		if (getIconFile(c, componentName).delete()) {
-			Log.v("TinyLaunch", "successful delete of "+componentName+" icon");
-		}
-	}
-
 	private void message(String title, String msg) {
 		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
 
@@ -161,7 +126,16 @@ public class Apps extends Activity {
 				ImageView img = (ImageView)v.findViewById(R.id.icon);
 				if (icons) {
 					img.setVisibility(View.VISIBLE);
-					//TODO
+					File iconFile = MyCache.getIconFile(Apps.this, a.component);
+					
+					if (iconFile.exists()) {
+						try {
+							img.setImageDrawable(Drawable.createFromStream(
+									new FileInputStream(iconFile), null));
+						} catch (Exception e) {
+							Log.e("TinyLaunch", ""+e);
+						}
+					}
 				}
 				else {
 					img.setVisibility(View.GONE);
@@ -198,7 +172,8 @@ public class Apps extends Activity {
         super.onCreate(savedInstanceState);
 
     	options = PreferenceManager.getDefaultSharedPreferences(this);
-
+    	packageManager = getPackageManager();
+    	
         setContentView(R.layout.apps);
         
         list = (ListView)findViewById(R.id.apps);
@@ -233,6 +208,22 @@ public class Apps extends Activity {
     	super.onResume();
 
     	loadList();
+    	boolean needReload = false;
+    	
+    	if (map.size() == 0) {
+    		needReload = true;
+    	}
+    	else {
+    		boolean icons = options.getBoolean(Options.PREF_ICONS, false);
+    		if (icons != options.getBoolean(Options.PREF_PREV_ICONS, false)) {
+    			if (icons)
+    				needReload = true;
+    			else {
+    				MyCache.deleteIcons(this);
+    				options.edit().putBoolean(Options.PREF_PREV_ICONS, icons).commit();
+    			}
+    		}
+    	}
     	if (map.size() == 0)     	
     		(new GetApps(this, list)).execute();
     }
