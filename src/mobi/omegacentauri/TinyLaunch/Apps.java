@@ -205,7 +205,7 @@ public class Apps extends Activity {
 			boolean[] checked = new boolean[nCategories];			
 			
 			for (int i = 0; i < nCategories ; i++) {
-				checked[i] = categories.in(item.component, customCategoryNames[i]);
+				checked[i] = categories.in(item, customCategoryNames[i]);
 			}
 			builder.setMultiChoiceItems(customCategoryNames, checked, 
 				new DialogInterface.OnMultiChoiceClickListener() {							

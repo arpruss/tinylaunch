@@ -38,6 +38,24 @@ public class AppData implements Comparable<AppData> {
 	public AppData() {			
 	}
 	
+	@Override
+	public boolean equals(Object a) {
+		if (! (a instanceof AppData))
+			return false;
+		if (component == null) {
+			return a == null || ((AppData)a).component == null;
+		}
+		return component.equals( ((AppData)a).component );
+	}
+	
+	@Override
+	public int hashCode() {
+		if (component == null)
+			return "NULL null NULL".hashCode();
+		else
+			return ("AppData:"+component).hashCode();
+	}
+	
 	public AppData(String component, String name) {
 		this.component = component;
 		this.name = name;
