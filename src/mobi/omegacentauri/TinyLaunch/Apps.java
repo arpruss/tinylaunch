@@ -15,9 +15,11 @@ import mobi.omegacentauri.TinyLaunch.R;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
+import android.app.AlertDialog.Builder;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -39,12 +41,14 @@ import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.Toast;
 
 public class Apps extends Activity {
 	Categories categories;
@@ -165,8 +169,60 @@ public class Apps extends Activity {
 				startActivity(i);
 			}        	
         });		
+        
+        list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener(){
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View v,
+					int position, long id) {
+				itemEdit(adapterSaved.getItem(position));
+				return false;
+			}        	
+        });
 	}
 	
+	protected void itemEdit(final AppData item) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		
+		builder.setTitle(item.name);
+		builder.setPositiveButton("OK", new OnClickListener(){
+			@Override
+			public void onClick(DialogInterface arg0, int arg1) {
+			}});
+		builder.setNeutralButton("Uninstall", new OnClickListener(){
+			@Override
+			public void onClick(DialogInterface arg0, int arg1) {
+				Uri uri = Uri.parse("package:"+ComponentName.unflattenFromString(
+						item.component).getPackageName());
+				startActivity(new Intent(Intent.ACTION_DELETE, uri));
+			}});
+		
+		ArrayList<String> customCategories =  categories.getCustomCategories();
+		final int nCategories = customCategories.size();
+
+		if (nCategories > 0) {
+			final String[] customCategoryNames = new String[nCategories];
+			customCategories.toArray(customCategoryNames);
+			boolean[] checked = new boolean[nCategories];			
+			
+			for (int i = 0; i < nCategories ; i++) {
+				checked[i] = categories.in(item.component, customCategoryNames[i]);
+			}
+			builder.setMultiChoiceItems(customCategoryNames, checked, 
+				new DialogInterface.OnMultiChoiceClickListener() {							
+					@Override
+					public void onClick(DialogInterface dialog, int which, boolean isChecked) {
+						Log.v("TinyLaunch", "setting "+item.name+" to "+isChecked);
+						if (isChecked) 
+							categories.addToCategory(customCategoryNames[which], item);
+						else
+							categories.removeFromCategory(customCategoryNames[which], item);
+					}
+			}
+			);
+		}
+		builder.create().show();
+	}
+
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -192,12 +248,30 @@ public class Apps extends Activity {
     	case R.id.options:
     		startActivity(new Intent(this, Options.class));
     		return true;
+    	case R.id.new_category:
+    		newCategory();
     	default:
     		return false;
     	}
     }
 
-    @Override
+    private void newCategory() {
+    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    	builder.setTitle("New category");
+    	builder.setMessage("Enter name of category:");
+    	final EditText inputBox = new EditText(this);
+    	builder.setView(inputBox);
+    	builder.setPositiveButton("OK", 
+    				new DialogInterface.OnClickListener() {
+    			public void onClick(DialogInterface dialog, int which) {
+    				if (!categories.addCategory(inputBox.getText().toString())) {
+    					Toast.makeText(Apps.this, "Name already in use", Toast.LENGTH_LONG).show();
+    				}
+    			} });
+    	builder.show();
+	}
+
+	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main, menu);
 	    return true;
@@ -224,7 +298,7 @@ public class Apps extends Activity {
     			}
     		}
     	}
-    	if (map.size() == 0)     	
+    	if (needReload || map.size() == 0)     	
     		(new GetApps(this, list)).execute();
     }
 
