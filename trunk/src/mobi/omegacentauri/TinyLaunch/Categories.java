@@ -7,13 +7,19 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.http.client.utils.URLEncodedUtils;
+
 import android.content.Context;
+import android.util.Log;
 
 public class Categories {
 	Context context;
@@ -24,6 +30,7 @@ public class Categories {
 	private Map<String,ArrayList<AppData>> categories;
 	private Map<String,AppData> map;
 	
+	@SuppressWarnings("deprecation")
 	public Categories(Context context, Map<String,AppData> map, String startingCategory) {
 		this.context = context;
 		this.map = map;
@@ -35,7 +42,8 @@ public class Categories {
 			String n = f.getName();
 			if (n.endsWith(".cat")) {
 				String name = n.substring(0, n.length()-4);
-				if (name.equals(ALL) || name.equals(UNCLASSIFIED))
+				name = URLDecoder.decode(name);
+				if (!isCustom(name))
 					continue;
 				names.add(name);
 				categories.put(name, getEntries(f));
@@ -72,8 +80,9 @@ public class Categories {
 		return data;
 	}
 
+	@SuppressWarnings("deprecation")
 	private File catPath(String category) {
-		return new File(context.getFilesDir()+"/"+category+".cat");
+		return new File(context.getFilesDir()+"/"+URLEncoder.encode(category)+".cat");
 	}
 
 	public ArrayList<String> getCategories() {
@@ -81,7 +90,7 @@ public class Categories {
 	}
 	
 	public void removeFromCategory(String cat, AppData a) {
-		if (cat == ALL || cat == UNCLASSIFIED)
+		if (!isCustom(cat))
 			return;
 		ArrayList<AppData> data = categories.get(cat);
 		if (data != null) {
@@ -91,17 +100,19 @@ public class Categories {
 	}
 	
 	public void addToCategory(String cat, AppData a) {
-		if (cat == ALL || cat == UNCLASSIFIED)
+		if (!isCustom(cat))
 			return;
+		
 		ArrayList<AppData> data = categories.get(cat);
 		if (data != null) {
-			data.add(a);				
+			Log.d("TinyLaunch", "adding "+a.name);
+			data.add(a);	
 			putEntries(catPath(cat), data);
 		}
 	}
 	
 	public void removeCategory() {
-		if (curCategory == ALL || curCategory == UNCLASSIFIED)
+		if (!isCustom(curCategory))
 			return;
 		catPath(curCategory).delete();
 		categories.remove(curCategory);
@@ -111,7 +122,7 @@ public class Categories {
 	
 	public void cleanCategories() {
 		for (String c: names) {
-			if (c == ALL || c == UNCLASSIFIED)
+			if (!isCustom(c))
 				continue;
 			
 			ArrayList<AppData> data = categories.get(c);
@@ -133,9 +144,12 @@ public class Categories {
 		}
 	}
 	
-	public void addCategory(String c) {
-		if (names.contains(c)) 
-			return;
+	public boolean addCategory(String c) {
+		Log.v("TinyLaunch", "adding "+c);
+		if (names.contains(c)) {
+			Log.v("TinyLaunch", "already used "+c);
+			return false;
+		}
 		categories.put(c, new ArrayList<AppData>());
 		names.add(c);
 		sortNames();
@@ -143,6 +157,7 @@ public class Categories {
 			catPath(c).createNewFile();
 		} catch (IOException e) {
 		}
+		return true;
 	}
 	
 	private void putEntries(File file, ArrayList<AppData> data) {
@@ -166,7 +181,7 @@ public class Categories {
 	public ArrayList<AppData> filterApps(Map<String,AppData> map) {
 		ArrayList<AppData> data = new ArrayList<AppData>();
 		
-		if (curCategory == ALL || curCategory == UNCLASSIFIED) {
+		if (!isCustom(curCategory)) {
 			data.addAll(map.values());
 			if (curCategory == UNCLASSIFIED) {
 				for (ArrayList<AppData> c : categories.values())
@@ -203,5 +218,25 @@ public class Categories {
 				}
 				return lhs.compareToIgnoreCase(rhs);
 			}});
+	}
+
+	public ArrayList<String> getCustomCategories() {
+		ArrayList<String> customNames = new ArrayList<String>();
+		for (String s : names)
+			if (isCustom(s))
+				customNames.add(s);
+		return customNames;
+	}
+	
+	public boolean isCustom(String c) {
+		return ! c.equals(ALL) && ! c.equals(UNCLASSIFIED);
+	}
+
+	public boolean in(String app, String cat) {
+		ArrayList<AppData> list = categories.get(cat);
+		for (AppData a : list)
+			if (a.component.equals(app))
+				return true;
+		return false;
 	}
 }
