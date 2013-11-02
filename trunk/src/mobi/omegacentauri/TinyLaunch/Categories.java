@@ -232,11 +232,7 @@ public class Categories {
 		return ! c.equals(ALL) && ! c.equals(UNCLASSIFIED);
 	}
 
-	public boolean in(String app, String cat) {
-		ArrayList<AppData> list = categories.get(cat);
-		for (AppData a : list)
-			if (a.component.equals(app))
-				return true;
-		return false;
+	public boolean in(AppData item, String cat) {
+		return categories.get(cat).contains(item);
 	}
 }
