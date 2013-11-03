@@ -46,6 +46,7 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.ProgressBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Toast;
@@ -60,6 +61,7 @@ public class Apps extends Activity {
 	public SharedPreferences options;
 	final static String PREF_APPS = "apps";
 	private PackageManager packageManager;
+	private Spinner spin;
 	
 	private void message(String title, String msg) {
 		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
@@ -96,12 +98,43 @@ public class Apps extends Activity {
 
 	public void loadList(Map<String,AppData> map) {
 		this.map = map;
-			
+		
 		if (categories == null) {
-			categories = new Categories(this, map, Categories.ALL);			
+			categories = new Categories(this, map);			
 		}
 		
 		loadFilteredApps();
+
+		spin = (Spinner)findViewById(R.id.category);
+		final ArrayList<String> cats = categories.getCategories();
+		ArrayAdapter<String> aa = new ArrayAdapter<String>(this, 
+				android.R.layout.simple_spinner_item,
+				cats);
+		aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		spin.setAdapter(aa);
+		String cur = categories.getCurCategory();
+		int pos = -1;
+		for (int i = 0 ; i < cats.size(); i++ )
+			if ( cats.get(i).equals(cur)) {
+				pos = i;
+				break;
+			}
+		
+		spin.setSelection(pos);
+		
+		spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+
+			@Override
+			public void onItemSelected(AdapterView<?> arg0, View arg1,
+					int catNum, long arg3) {
+				categories.setCategory(cats.get(catNum));
+				loadFilteredApps();
+			}
+
+			@Override
+			public void onNothingSelected(AdapterView<?> arg0) {
+			}
+		});	
 	}
 	
 	public void loadFilteredApps() {		
@@ -178,6 +211,8 @@ public class Apps extends Activity {
 				return false;
 			}        	
         });
+
+
 	}
 	
 	protected void itemEdit(final AppData item) {
@@ -250,6 +285,14 @@ public class Apps extends Activity {
     		return true;
     	case R.id.new_category:
     		newCategory();
+    		return true;
+    	case R.id.rename_category:
+    		renameCategory();
+    		return true;
+    	case R.id.delete_category:
+    		categories.removeCategory();
+    		loadFilteredApps();
+    		return true;
     	default:
     		return false;
     	}
@@ -265,6 +308,26 @@ public class Apps extends Activity {
     				new DialogInterface.OnClickListener() {
     			public void onClick(DialogInterface dialog, int which) {
     				if (!categories.addCategory(inputBox.getText().toString())) {
+    					Toast.makeText(Apps.this, "Name already in use", Toast.LENGTH_LONG).show();
+    				}
+    			} });
+    	builder.show();
+	}
+
+    private void renameCategory() {
+    	if (! categories.isCustom(categories.getCurCategory()))
+    		return;
+
+    	AlertDialog.Builder builder = new AlertDialog.Builder(this);
+    	builder.setTitle("Rename category");
+    	builder.setMessage("Edit name of category:");
+    	final EditText inputBox = new EditText(this);
+    	inputBox.setText(categories.getCurCategory());
+    	builder.setView(inputBox);
+    	builder.setPositiveButton("OK", 
+    				new DialogInterface.OnClickListener() {
+    			public void onClick(DialogInterface dialog, int which) {
+    				if (!categories.renameCategory(inputBox.getText().toString())) {
     					Toast.makeText(Apps.this, "Name already in use", Toast.LENGTH_LONG).show();
     				}
     			} });

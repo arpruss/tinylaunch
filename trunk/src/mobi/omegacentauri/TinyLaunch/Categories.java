@@ -19,6 +19,8 @@ import java.util.Map;
 import org.apache.http.client.utils.URLEncodedUtils;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class Categories {
@@ -29,10 +31,12 @@ public class Categories {
 	private ArrayList<String> names;
 	private Map<String,ArrayList<AppData>> categories;
 	private Map<String,AppData> map;
+	private SharedPreferences options;
 	
 	@SuppressWarnings("deprecation")
-	public Categories(Context context, Map<String,AppData> map, String startingCategory) {
+	public Categories(Context context, Map<String,AppData> map) {
 		this.context = context;
+    	options = PreferenceManager.getDefaultSharedPreferences(context);
 		this.map = map;
 		names = new ArrayList<String>();
 		names.add(ALL);
@@ -51,11 +55,16 @@ public class Categories {
 		}
 		
 		sortNames();
-		setCategory(startingCategory);
+		curCategory = options.getString(Options.PREF_CATEGORY, ALL);
 	}
 	
 	public void setCategory(String category) {
 		curCategory = category;
+		options.edit().putString(Options.PREF_CATEGORY, category).commit();
+	}
+	
+	public String getCategory() {
+		return curCategory;
 	}
 	
 	private ArrayList<AppData> getEntries(File f) {
@@ -150,13 +159,14 @@ public class Categories {
 			Log.v("TinyLaunch", "already used "+c);
 			return false;
 		}
-		categories.put(c, new ArrayList<AppData>());
-		names.add(c);
-		sortNames();
 		try {
 			catPath(c).createNewFile();
 		} catch (IOException e) {
+			return false;
 		}
+		categories.put(c, new ArrayList<AppData>());
+		names.add(c);
+		sortNames();
 		return true;
 	}
 	
@@ -190,6 +200,7 @@ public class Categories {
 		}
 		else {
 			ArrayList<AppData> c = categories.get(curCategory);
+			Log.v("TinyLaunch", "filtering via "+curCategory+" "+c.size());
 			if (c != null) {
 				data.addAll(c);
 			}
@@ -216,6 +227,12 @@ public class Categories {
 					else
 						return 1;
 				}
+				else if (rhs.equals(ALL)) {
+					return 1;
+				}
+				else if (rhs.equals(UNCLASSIFIED)) {
+					return -1;
+				}
 				return lhs.compareToIgnoreCase(rhs);
 			}});
 	}
@@ -234,5 +251,31 @@ public class Categories {
 
 	public boolean in(AppData item, String cat) {
 		return categories.get(cat).contains(item);
+	}
+
+	public String getCurCategory() {
+		// TODO Auto-generated method stub
+		return curCategory;
+	}
+
+	public boolean renameCategory(String c) {
+		if (c.equals(curCategory))
+			return true;
+		
+		if (names.contains(c)) {
+			Log.v("TinyLaunch", "already used "+c);
+			return false;
+		}
+		
+		if (!catPath(curCategory).renameTo(catPath(c)))
+			return false;
+
+		ArrayList<AppData> d = categories.get(curCategory);
+		categories.remove(curCategory);
+		categories.put(c, d);
+		names.add(c);
+		sortNames();
+		curCategory = c;
+		return true;
 	}
 }
