@@ -12,6 +12,7 @@ public class Options extends PreferenceActivity {
 	public final static String PREF_TILE = "tile";
 	public final static String PREF_ICONS = "icons";
 	public final static String PREF_PREV_ICONS = "prevIcons";
+	public static final String PREF_CATEGORY = "category";
 	
 	@Override
 	public void onCreate(Bundle icicle) {

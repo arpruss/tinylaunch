@@ -6,11 +6,16 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     >
+    <Spinner
+        android:id="@+id/category"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+    
 <ListView android:scrollbars="vertical" 
 android:id="@+id/apps" 
 android:layout_width="fill_parent"
 android:layout_weight="1"
-android:layout_height="fill_parent"
+android:layout_height="0px"
 android:fastScrollEnabled="true"
 />
 
