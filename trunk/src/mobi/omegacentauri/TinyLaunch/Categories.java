@@ -58,7 +58,7 @@ public class Categories {
 		curCategory = options.getString(Options.PREF_CATEGORY, ALL);
 	}
 	
-	public void setCategory(String category) {
+	public void setCurCategory(String category) {
 		curCategory = category;
 		options.edit().putString(Options.PREF_CATEGORY, category).commit();
 	}
@@ -126,7 +126,7 @@ public class Categories {
 		catPath(curCategory).delete();
 		categories.remove(curCategory);
 		names.remove(curCategory);
-		setCategory(ALL);
+		setCurCategory(ALL);
 	}
 	
 	public void cleanCategories() {
@@ -200,7 +200,7 @@ public class Categories {
 		}
 		else {
 			ArrayList<AppData> c = categories.get(curCategory);
-			Log.v("TinyLaunch", "filtering via "+curCategory+" "+c.size());
+			//Log.v("TinyLaunch", "filtering via "+curCategory+" "+c.size());
 			if (c != null) {
 				data.addAll(c);
 			}
@@ -273,9 +273,10 @@ public class Categories {
 		ArrayList<AppData> d = categories.get(curCategory);
 		categories.remove(curCategory);
 		categories.put(c, d);
+		names.remove(curCategory);
 		names.add(c);
 		sortNames();
-		curCategory = c;
+		setCurCategory(c);
 		return true;
 	}
 }
