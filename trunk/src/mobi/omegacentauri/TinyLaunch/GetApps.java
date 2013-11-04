@@ -88,6 +88,9 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 				else if (info.activityInfo.packageName.startsWith("com.rovio.angrybirdsseasons")) {
 					name = name + " Seasons";
 				}
+				else if (info.activityInfo.packageName.startsWith("com.rovio.angrybirdsspace")) {
+					name = name + " Space";
+				}
 			}
 			
 			apps.add(new AppData(component, name));
