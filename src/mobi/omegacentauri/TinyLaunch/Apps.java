@@ -104,13 +104,18 @@ public class Apps extends Activity {
 		}
 		
 		loadFilteredApps();
-
+		setSpinner();
+		
+	}
+	
+	public void setSpinner() {
 		spin = (Spinner)findViewById(R.id.category);
 		final ArrayList<String> cats = categories.getCategories();
 		ArrayAdapter<String> aa = new ArrayAdapter<String>(this, 
 				android.R.layout.simple_spinner_item,
 				cats);
-		aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+//		aa.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+		aa.setDropDownViewResource(R.layout.spinner_item);
 		spin.setAdapter(aa);
 		String cur = categories.getCurCategory();
 		int pos = -1;
@@ -162,7 +167,6 @@ public class Apps extends Activity {
 				tv.setText(a.name);
 				ImageView img = (ImageView)v.findViewById(R.id.icon);
 				if (icons) {
-					img.setVisibility(View.VISIBLE);
 					File iconFile = MyCache.getIconFile(Apps.this, a.component);
 					
 					if (iconFile.exists()) {
@@ -171,7 +175,12 @@ public class Apps extends Activity {
 									new FileInputStream(iconFile), null));
 						} catch (Exception e) {
 							Log.e("TinyLaunch", ""+e);
+							img.setVisibility(View.INVISIBLE);
 						}
+						img.setVisibility(View.VISIBLE);
+					}
+					else {
+						img.setVisibility(View.INVISIBLE);
 					}
 				}
 				else {
@@ -227,21 +236,22 @@ public class Apps extends Activity {
 				startActivity(new Intent(Intent.ACTION_DELETE, uri));
 			}});
 		
-		ArrayList<String> customCategories =  categories.getCustomCategories();
-		final int nCategories = customCategories.size();
-
+		ArrayList<String> editableCategories =  categories.getEditableCategories();
+		final int nCategories = editableCategories.size();
+		final int position = list.getFirstVisiblePosition();
+		
 		if (nCategories > 0) {
-			final String[] customCategoryNames = new String[nCategories];
-			customCategories.toArray(customCategoryNames);
+			final String[] editableCategoryNames = new String[nCategories];
+			editableCategories.toArray(editableCategoryNames);
 			final boolean[] checked = new boolean[nCategories];			
 			
 			for (int i = 0; i < nCategories ; i++) {
-				checked[i] = categories.in(item, customCategoryNames[i]);
+				checked[i] = categories.in(item, editableCategoryNames[i]);
 			}
 
 			final boolean[] oldChecked = checked.clone();
 			
-			builder.setMultiChoiceItems(customCategoryNames, checked, 
+			builder.setMultiChoiceItems(editableCategoryNames, checked, 
 				new DialogInterface.OnMultiChoiceClickListener() {							
 					@Override
 					public void onClick(DialogInterface dialog, int which, boolean isChecked) {
@@ -258,11 +268,12 @@ public class Apps extends Activity {
 				public void onClick(DialogInterface arg0, int arg1) {
 					for (int i = 0 ; i < nCategories ; i++) {
 						if (checked[i] && ! oldChecked[i])
-							categories.addToCategory(customCategoryNames[i], item);
+							categories.addToCategory(editableCategoryNames[i], item);
 						else if (!checked[i] && oldChecked[i])
-							categories.removeFromCategory(customCategoryNames[i], item);
+							categories.removeFromCategory(editableCategoryNames[i], item);
 					}
 					loadFilteredApps();
+					list.setSelectionFromTop(position, 0);
 				}});
 		}
 		builder.create().show();
@@ -337,9 +348,10 @@ public class Apps extends Activity {
     	builder.setPositiveButton("OK", 
     				new DialogInterface.OnClickListener() {
     			public void onClick(DialogInterface dialog, int which) {
-    				if (!categories.renameCategory(inputBox.getText().toString())) {
-    					Toast.makeText(Apps.this, "Name already in use", Toast.LENGTH_LONG).show();
-    				}
+    				if (categories.renameCategory(inputBox.getText().toString())) 
+    					setSpinner();
+    				else
+    					Toast.makeText(Apps.this, "Name already in use", Toast.LENGTH_LONG).show();    				
     			} });
     	builder.show();
 	}

@@ -27,6 +27,7 @@ public class Categories {
 	Context context;
 	public static final String ALL = "All";
 	public static final String UNCLASSIFIED = "Unclassified";
+	public static final String HIDDEN = "Hidden";
 	private String curCategory;
 	private ArrayList<String> names;
 	private Map<String,ArrayList<AppData>> categories;
@@ -40,6 +41,7 @@ public class Categories {
 		this.map = map;
 		names = new ArrayList<String>();
 		names.add(ALL);
+		names.add(HIDDEN);
 		names.add(UNCLASSIFIED);
 		categories = new HashMap<String,ArrayList<AppData>>();
 		for (File f : context.getFilesDir().listFiles()) {
@@ -47,11 +49,16 @@ public class Categories {
 			if (n.endsWith(".cat")) {
 				String name = n.substring(0, n.length()-4);
 				name = URLDecoder.decode(name);
-				if (!isCustom(name))
-					continue;
-				names.add(name);
-				categories.put(name, getEntries(f));
+				if (isEditable(name))
+					categories.put(name, getEntries(f));
+				if (isCustom(name))
+					names.add(name);
 			}
+		}
+		
+		for (String n : names) {
+			if (null == categories.get(n))
+				categories.put(n, new ArrayList<AppData>());
 		}
 		
 		sortNames();
@@ -99,7 +106,7 @@ public class Categories {
 	}
 	
 	public void removeFromCategory(String cat, AppData a) {
-		if (!isCustom(cat))
+		if (!isEditable(cat))
 			return;
 		ArrayList<AppData> data = categories.get(cat);
 		if (data != null) {
@@ -109,7 +116,7 @@ public class Categories {
 	}
 	
 	public void addToCategory(String cat, AppData a) {
-		if (!isCustom(cat))
+		if (!isEditable(cat))
 			return;
 		
 		ArrayList<AppData> data = categories.get(cat);
@@ -131,7 +138,7 @@ public class Categories {
 	
 	public void cleanCategories() {
 		for (String c: names) {
-			if (!isCustom(c))
+			if (!isEditable(c))
 				continue;
 			
 			ArrayList<AppData> data = categories.get(c);
@@ -191,10 +198,15 @@ public class Categories {
 	public ArrayList<AppData> filterApps(Map<String,AppData> map) {
 		ArrayList<AppData> data = new ArrayList<AppData>();
 		
-		if (!isCustom(curCategory)) {
+		if (!isEditable(curCategory)) {
 			data.addAll(map.values());
 			if (curCategory == UNCLASSIFIED) {
 				for (ArrayList<AppData> c : categories.values())
+					data.removeAll(c);
+			}
+			else {
+				ArrayList<AppData> c = categories.get(HIDDEN);
+				if (c != null)
 					data.removeAll(c);
 			}
 		}
@@ -221,14 +233,25 @@ public class Categories {
 					else
 						return -1;
 				}
+				else if (lhs.equals(HIDDEN)) {
+					if (rhs.equals(HIDDEN)) 
+						return 0;
+					else
+						return 1;
+				}
 				else if (lhs.equals(UNCLASSIFIED)) {
 					if (rhs.equals(UNCLASSIFIED)) 
 						return 0;
+					else if (rhs.equals(HIDDEN))
+						return -1;
 					else
 						return 1;
 				}
 				else if (rhs.equals(ALL)) {
 					return 1;
+				}
+				else if (rhs.equals(HIDDEN)) {
+					return -1;
 				}
 				else if (rhs.equals(UNCLASSIFIED)) {
 					return -1;
@@ -237,15 +260,19 @@ public class Categories {
 			}});
 	}
 
-	public ArrayList<String> getCustomCategories() {
+	public ArrayList<String> getEditableCategories() {
 		ArrayList<String> customNames = new ArrayList<String>();
 		for (String s : names)
-			if (isCustom(s))
+			if (isEditable(s))
 				customNames.add(s);
 		return customNames;
 	}
 	
 	public boolean isCustom(String c) {
+		return ! c.equals(ALL) && ! c.equals(UNCLASSIFIED) && ! c.equals(HIDDEN);
+	}
+
+	public boolean isEditable(String c) {
 		return ! c.equals(ALL) && ! c.equals(UNCLASSIFIED);
 	}
 
