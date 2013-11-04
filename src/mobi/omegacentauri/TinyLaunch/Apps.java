@@ -127,7 +127,7 @@ public class Apps extends Activity {
 			@Override
 			public void onItemSelected(AdapterView<?> arg0, View arg1,
 					int catNum, long arg3) {
-				categories.setCategory(cats.get(catNum));
+				categories.setCurCategory(cats.get(catNum));
 				loadFilteredApps();
 			}
 
@@ -219,10 +219,6 @@ public class Apps extends Activity {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		
 		builder.setTitle(item.name);
-		builder.setPositiveButton("OK", new OnClickListener(){
-			@Override
-			public void onClick(DialogInterface arg0, int arg1) {
-			}});
 		builder.setNeutralButton("Uninstall", new OnClickListener(){
 			@Override
 			public void onClick(DialogInterface arg0, int arg1) {
@@ -237,23 +233,37 @@ public class Apps extends Activity {
 		if (nCategories > 0) {
 			final String[] customCategoryNames = new String[nCategories];
 			customCategories.toArray(customCategoryNames);
-			boolean[] checked = new boolean[nCategories];			
+			final boolean[] checked = new boolean[nCategories];			
 			
 			for (int i = 0; i < nCategories ; i++) {
 				checked[i] = categories.in(item, customCategoryNames[i]);
 			}
+
+			final boolean[] oldChecked = checked.clone();
+			
 			builder.setMultiChoiceItems(customCategoryNames, checked, 
 				new DialogInterface.OnMultiChoiceClickListener() {							
 					@Override
 					public void onClick(DialogInterface dialog, int which, boolean isChecked) {
 						Log.v("TinyLaunch", "setting "+item.name+" to "+isChecked);
-						if (isChecked) 
-							categories.addToCategory(customCategoryNames[which], item);
-						else
-							categories.removeFromCategory(customCategoryNames[which], item);
+//						if (isChecked) 
+//							categories.addToCategory(customCategoryNames[which], item);
+//						else
+//							categories.removeFromCategory(customCategoryNames[which], item);
 					}
 			}
 			);
+			builder.setPositiveButton("OK", new OnClickListener(){
+				@Override
+				public void onClick(DialogInterface arg0, int arg1) {
+					for (int i = 0 ; i < nCategories ; i++) {
+						if (checked[i] && ! oldChecked[i])
+							categories.addToCategory(customCategoryNames[i], item);
+						else if (!checked[i] && oldChecked[i])
+							categories.removeFromCategory(customCategoryNames[i], item);
+					}
+					loadFilteredApps();
+				}});
 		}
 		builder.create().show();
 	}
