@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 import android.widget.CheckBox;
@@ -18,7 +19,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
@@ -42,14 +45,15 @@ import android.widget.TextView;
 public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 	final PackageManager pm;
 	final Apps	 context;
-	final ListView listView;
-	public final static String CACHE_NAME = "apps"; 
+	public final static String CACHE_NAME = "vapps"; 
+	private boolean slow;
 	ProgressDialog progress;
 	
-	GetApps(Apps c, ListView lv) {
-		context = c;
+	GetApps(Apps c, boolean slow) {
+		this.context = c;
+		this.slow = slow;
 		pm = context.getPackageManager();
-		listView = lv;
+
 	}
 
 	private boolean profilable(ApplicationInfo a) {
@@ -65,12 +69,29 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 		Intent launchIntent = new Intent(Intent.ACTION_MAIN);
 		launchIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 		
-		MyCache.deleteIcons(context);
+		boolean icons = context.options.getBoolean(Options.PREF_ICONS, false);
+		Map<String,AppData> cache = new HashMap<String,AppData>();
 
+		if (slow || !icons) {
+			MyCache.deleteIcons(context);
+		}
+	
+		if (!slow) {
+			ArrayList<AppData> cacheData = new ArrayList<AppData>();
+			MyCache.read(context, CACHE_NAME, cacheData);
+			Log.v("TinyLaunch", "cache "+cacheData.size());
+			for (AppData a : cacheData) {
+				cache.put(a.component, a);
+			}
+		}
+		
 		List<ResolveInfo> list = 
 			pm.queryIntentActivities(launchIntent, 0);
 		
-		boolean icons = context.options.getBoolean(Options.PREF_ICONS, false);
+		String component;
+		String name;
+		boolean cacheValid;
+		int versionCode;
 		
 		for (int i = 0 ; i < list.size() ; i++) {
 			publishProgress(i, list.size());
@@ -79,45 +100,72 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 
 			ComponentName cn = new ComponentName(info.activityInfo.packageName, 
 					info.activityInfo.name);
-			String component = cn.flattenToString();
-			String name = (String) info.activityInfo.loadLabel(pm);
-			if (name.equals("Angry Birds")) {
-				if(info.activityInfo.packageName.startsWith("com.rovio.angrybirdsrio")) {
-					name = name + " Rio";
+			component = cn.flattenToString();
+			name = null;
+			cacheValid = false;
+			versionCode = -1;
+			
+//			try {
+//				versionCode = pm.getPackageInfo(info.activityInfo.packageName, 0).versionCode;
+//			} catch (NameNotFoundException e1) {
+//			}
+			
+			if (!slow) {
+				AppData a = cache.get(component);
+				if (a != null) {
+					if (versionCode == a.versionCode) {
+						name = a.name;
+						cacheValid = true;
+					}
 				}
-				else if (info.activityInfo.packageName.startsWith("com.rovio.angrybirdsseasons")) {
-					name = name + " Seasons";
+			}
+			
+			if (!cacheValid) {
+				name = (String) info.activityInfo.loadLabel(pm);
+				if (name == null)
+					name = component;
+				if (name.equals("Angry Birds")) {
+					if(info.activityInfo.packageName.startsWith("com.rovio.angrybirdsrio")) {
+						name = name + " Rio";
+					}
+					else if (info.activityInfo.packageName.startsWith("com.rovio.angrybirdsseasons")) {
+						name = name + " Seasons";
+					}
 				}
 				else if (info.activityInfo.packageName.startsWith("com.rovio.angrybirdsspace")) {
 					name = name + " Space";
 				}
 			}
 			
-			apps.add(new AppData(component, name));
+			apps.add(new AppData(component, name, versionCode));
 			
 			if (icons) {
 				File iconFile = MyCache.getIconFile(context, component);
 				
-				try {
-					Drawable d = pm.getResourcesForActivity(cn)
-							.getDrawable(pm.getPackageInfo(
-									info.activityInfo.packageName, 
-									0).applicationInfo.icon);
-					if (d instanceof BitmapDrawable) {
-						Bitmap bmp = ((BitmapDrawable)d).getBitmap();
-						FileOutputStream out = new FileOutputStream(iconFile);
-						bmp.compress(CompressFormat.PNG, 100, out);
-						out.close();
+				if (!cacheValid || !iconFile.exists()) {
+					Log.v("TinyLaunch", "finding icon for "+name);
+					try {
+						Drawable d = pm.getResourcesForActivity(cn)
+								.getDrawable(pm.getPackageInfo(
+										info.activityInfo.packageName, 
+										0).applicationInfo.icon);
+						if (d instanceof BitmapDrawable) {
+							Bitmap bmp = ((BitmapDrawable)d).getBitmap();
+							FileOutputStream out = new FileOutputStream(iconFile);
+							bmp.compress(CompressFormat.PNG, 100, out);
+							out.close();
+						}
+					} catch (Exception e) {
+						Log.e("TinyLaunch", ""+e);
+						iconFile.delete();
 					}
-				} catch (Exception e) {
-					Log.e("TinyLaunch", ""+e);
-					iconFile.delete();
 				}
 			}
-			
 		}
 		
 		MyCache.write(context, CACHE_NAME, apps);
+		MyCache.cleanIcons(context, apps);
+		context.options.edit().putBoolean(Options.PREF_DIRTY,false).commit();
 		
 		publishProgress(list.size(), list.size());
 
