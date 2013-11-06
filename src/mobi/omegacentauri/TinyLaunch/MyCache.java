@@ -29,8 +29,8 @@ public class MyCache {
 	
 	public static boolean write(Context c, String fname, 
 			ArrayList<AppData> data) {
-		Log.v("TinyLaunch", "cache write "+fname+" "+data.size()+" items");
 		String path = genFilename(c, fname);
+		Log.v("TinyLaunch", "cache write "+path+" "+data.size()+" items");
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(
 					path+".temp"));
@@ -39,9 +39,12 @@ public class MyCache {
 			}
 			writer.close();
 			if (!new File(path+".temp").renameTo(new File(path))) {
+				Log.e("TinyLaunch", "error renaming");
 				throw new IOException();
 			}
+			Log.v("TinyLaunch", "wrote cache to "+path);
 		} catch (IOException e) {
+			Log.e("TinyLaunch", ""+e);
 			new File(path+".tmp").delete();
 			return false;
 		}
@@ -102,6 +105,20 @@ public class MyCache {
 			return;
 		if (getIconFile(c, componentName).delete()) {
 			Log.v("TinyLaunch", "successful delete of "+componentName+" icon");
+		}
+	}
+	
+	public static void cleanIcons(Context c, ArrayList<AppData> data) {
+		ArrayList<String> components = new ArrayList<String>();
+		for (AppData a : data)
+			components.add(Uri.encode(a.component)+".icon.png");
+		
+		File[] dirs = c.getCacheDir().listFiles();
+		
+		for (File f : dirs) {
+			String name = f.getName();
+			if (name.endsWith(".icon.png") && !components.contains(f.getName()))
+				f.delete();
 		}
 	}
 	

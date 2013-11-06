@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu
   xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:title="Scan" android:id="@+id/scan"></item>
+    <item android:title="Quick scan" android:id="@+id/scan"></item>
     <item android:title="Settings..." android:id="@+id/options"></item>
     <item android:title="New category" android:id="@+id/new_category"></item>
     <item android:title="Rename category..." android:id="@+id/rename_category"></item>
     <item android:title="Delete category" android:id="@+id/delete_category"></item>
-    
+    <item android:title="Full scan" android:id="@+id/full_scan"/>
 </menu>

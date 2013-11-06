@@ -299,7 +299,10 @@ public class Apps extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
     	switch(item.getItemId()) {
     	case R.id.scan:
-    		(new GetApps(this, list)).execute();
+    		(new GetApps(this, false)).execute();
+    		return true;
+    	case R.id.full_scan:
+    		(new GetApps(this, true)).execute();
     		return true;
     	case R.id.options:
     		startActivity(new Intent(this, Options.class));
@@ -383,8 +386,8 @@ public class Apps extends Activity {
     			}
     		}
     	}
-    	if (needReload || map.size() == 0)     	
-    		(new GetApps(this, list)).execute();
+    	if (needReload || map.size() == 0 || options.getBoolean(Options.PREF_DIRTY, true))     	
+    		(new GetApps(this, false)).execute();
     }
 
 }
