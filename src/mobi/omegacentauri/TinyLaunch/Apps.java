@@ -78,10 +78,10 @@ public class Apps extends Activity {
 
 	}
 
-	public void loadList() {
+	public void loadList(boolean cleanCategory) {
 		ArrayList<AppData> data = new ArrayList<AppData>(); 
 		MyCache.read(this, GetApps.CACHE_NAME, data);
-		loadList(data);
+		loadList(data, cleanCategory);
 	}
 	
 	private Map<String, AppData> makeMap(ArrayList<AppData> data) {
@@ -92,20 +92,25 @@ public class Apps extends Activity {
 		return map;
 	}
 
-	public void loadList(ArrayList<AppData> data) {
-		loadList(makeMap(data));
+	public void loadList(ArrayList<AppData> data, boolean cleanCategory) {
+		loadList(makeMap(data), cleanCategory);
 	}
 
-	public void loadList(Map<String,AppData> map) {
+	public void loadList(Map<String,AppData> map, boolean cleanCategory) {
 		this.map = map;
 		
 		if (categories == null) {
 			categories = new Categories(this, map);			
 		}
+		else {
+			categories.setMap(map);
+		}
+
+		if (cleanCategory)
+			categories.cleanCategories();
 		
 		loadFilteredApps();
-		setSpinner();
-		
+		setSpinner();		
 	}
 	
 	public void setSpinner() {
@@ -368,8 +373,10 @@ public class Apps extends Activity {
 	@Override
     public void onResume() {
     	super.onResume();
+    	
+    	Log.v("TinyLaunch", "onResume");
 
-    	loadList();
+    	loadList(false);
     	boolean needReload = false;
     	
     	if (map.size() == 0) {
@@ -386,8 +393,11 @@ public class Apps extends Activity {
     			}
     		}
     	}
-    	if (needReload || map.size() == 0 || options.getBoolean(Options.PREF_DIRTY, true))     	
+    	
+    	if (needReload || map.size() == 0 || options.getBoolean(Options.PREF_DIRTY, true)) {
+    		Log.v("TinyLaunch", "scan");
     		(new GetApps(this, false)).execute();
+    	}
     }
 
 }

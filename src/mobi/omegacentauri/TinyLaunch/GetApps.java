@@ -45,7 +45,7 @@ import android.widget.TextView;
 public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 	final PackageManager pm;
 	final Apps	 context;
-	public final static String CACHE_NAME = "vapps"; 
+	public final static String CACHE_NAME = "apps"; 
 	private boolean slow;
 	ProgressDialog progress;
 	
@@ -91,7 +91,7 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 		String component;
 		String name;
 		boolean cacheValid;
-		int versionCode;
+		//int versionCode;
 		
 		for (int i = 0 ; i < list.size() ; i++) {
 			publishProgress(i, list.size());
@@ -103,7 +103,7 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 			component = cn.flattenToString();
 			name = null;
 			cacheValid = false;
-			versionCode = -1;
+			//versionCode = -1;
 			
 //			try {
 //				versionCode = pm.getPackageInfo(info.activityInfo.packageName, 0).versionCode;
@@ -113,13 +113,11 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 			if (!slow) {
 				AppData a = cache.get(component);
 				if (a != null) {
-					if (versionCode == a.versionCode) {
-						name = a.name;
-						cacheValid = true;
-					}
+					name = a.name;
+					cacheValid = true;
 				}
 			}
-			
+
 			if (!cacheValid) {
 				name = (String) info.activityInfo.loadLabel(pm);
 				if (name == null)
@@ -131,13 +129,13 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 					else if (info.activityInfo.packageName.startsWith("com.rovio.angrybirdsseasons")) {
 						name = name + " Seasons";
 					}
-				}
-				else if (info.activityInfo.packageName.startsWith("com.rovio.angrybirdsspace")) {
-					name = name + " Space";
+					else if (info.activityInfo.packageName.startsWith("com.rovio.angrybirdsspace")) {
+						name = name + " Space";
+					}
 				}
 			}
 			
-			apps.add(new AppData(component, name, versionCode));
+			apps.add(new AppData(component, name));
 			
 			if (icons) {
 				File iconFile = MyCache.getIconFile(context, component);
@@ -192,7 +190,7 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 	@Override
 	protected void onPostExecute(ArrayList<AppData> data) {
 		
-		context.loadList(data);
+		context.loadList(data, true);
 		context.options.edit().putBoolean(Options.PREF_PREV_ICONS, 
 				context.options.getBoolean(Options.PREF_ICONS, false)).commit();
 		

@@ -37,13 +37,21 @@ public class Categories {
 	@SuppressWarnings("deprecation")
 	public Categories(Context context, Map<String,AppData> map) {
 		this.context = context;
-    	options = PreferenceManager.getDefaultSharedPreferences(context);
 		this.map = map;
+		options = PreferenceManager.getDefaultSharedPreferences(context);
 		names = new ArrayList<String>();
 		names.add(ALL);
 		names.add(HIDDEN);
 		names.add(UNCLASSIFIED);
+
 		categories = new HashMap<String,ArrayList<AppData>>();
+		loadCategories();		
+		sortNames();
+
+		curCategory = options.getString(Options.PREF_CATEGORY, ALL);
+	}
+	
+	public void loadCategories() {
 		for (File f : context.getFilesDir().listFiles()) {
 			String n = f.getName();
 			if (n.endsWith(".cat")) {
@@ -60,9 +68,10 @@ public class Categories {
 			if (null == categories.get(n))
 				categories.put(n, new ArrayList<AppData>());
 		}
-		
-		sortNames();
-		curCategory = options.getString(Options.PREF_CATEGORY, ALL);
+	}
+	
+	public void setMap(Map<String,AppData> map) {
+		this.map = map;
 	}
 	
 	public void setCurCategory(String category) {
@@ -88,7 +97,7 @@ public class Categories {
 					if (a != null)
 						data.add(a);
 				}
-			}
+			}			
 		} catch (FileNotFoundException e) {
 		} catch (IOException e) {
 		}
@@ -148,9 +157,10 @@ public class Categories {
 			
 			boolean dirty = false;
 			
-			for (AppData a : data) {
-				if (!map.containsValue(a)) {
-					data.remove(a);
+			for (int i = data.size() - 1 ; i >= 0 ; i--) {
+				AppData a = data.get(i);
+				if (null == map.get(a.component)) {
+					data.remove(i);
 					dirty = true;
 				}
 			}
