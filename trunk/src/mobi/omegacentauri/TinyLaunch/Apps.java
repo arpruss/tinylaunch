@@ -34,10 +34,12 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowManager;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -239,6 +241,7 @@ public class Apps extends Activity {
 				Uri uri = Uri.parse("package:"+ComponentName.unflattenFromString(
 						item.component).getPackageName());
 				startActivity(new Intent(Intent.ACTION_DELETE, uri));
+				options.edit().putBoolean(Options.PREF_DIRTY, true).commit();
 			}});
 		
 		ArrayList<String> editableCategories =  categories.getEditableCategories();
@@ -283,15 +286,35 @@ public class Apps extends Activity {
 		}
 		builder.create().show();
 	}
+	
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		/* if (keyCode == KeyEvent.KEYCODE_HOME) {
+			categories.setCurCategory(Categories.ALL);
+			loadFilteredApps();
+			setSpinner();
+			return true;
+		}
+		else */ if (keyCode == KeyEvent.KEYCODE_BACK) {
+			categories.prevCategory();
+			loadFilteredApps();
+			setSpinner();
+			return true;
+		}
+		return false;
+	}
 
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
     	options = PreferenceManager.getDefaultSharedPreferences(this);
     	packageManager = getPackageManager();
     	
         setContentView(R.layout.apps);
+
+ //       getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD);
         
         list = (ListView)findViewById(R.id.apps);
         
@@ -303,9 +326,9 @@ public class Apps extends Activity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
     	switch(item.getItemId()) {
-    	case R.id.scan:
-    		(new GetApps(this, false)).execute();
-    		return true;
+//    	case R.id.scan:
+//    		(new GetApps(this, false)).execute();
+//    		return true;
     	case R.id.full_scan:
     		(new GetApps(this, true)).execute();
     		return true;

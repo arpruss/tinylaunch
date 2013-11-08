@@ -33,12 +33,15 @@ public class Categories {
 	private Map<String,ArrayList<AppData>> categories;
 	private Map<String,AppData> map;
 	private SharedPreferences options;
+	private ArrayList<String> history;
+	private static final int HISTORY_MAX = 10;
 	
 	@SuppressWarnings("deprecation")
 	public Categories(Context context, Map<String,AppData> map) {
 		this.context = context;
 		this.map = map;
-		options = PreferenceManager.getDefaultSharedPreferences(context);
+		this.options = PreferenceManager.getDefaultSharedPreferences(context);
+		history = new ArrayList<String>();
 		names = new ArrayList<String>();
 		names.add(ALL);
 		names.add(HIDDEN);
@@ -75,8 +78,39 @@ public class Categories {
 	}
 	
 	public void setCurCategory(String category) {
+		setCurCategory(category, true);
+	}
+	
+	public void setCurCategory(String category, boolean push) {
+		if (push)
+			pushCategory(curCategory);
 		curCategory = category;
 		options.edit().putString(Options.PREF_CATEGORY, category).commit();
+	}
+	
+	public void prevCategory() {
+		String c = popCategory();
+		if (c != null)
+			setCurCategory(c, false);
+	}
+	
+	private void pushCategory(String c) {
+		if (history.size() > 0 && history.get(history.size()-1).equals(c))
+			return;
+		if (history.size() >= HISTORY_MAX)
+			history.remove(0);
+		history.add(c);
+	}
+	
+	private String popCategory() {
+		while (history.size() > 0) {
+			String c = history.get(history.size()-1);
+			history.remove(history.size()-1);
+			if (names.contains(c))
+				return c;
+		}
+		return ALL;
+//		return null;
 	}
 	
 	public String getCategory() {
