@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      android:versionCode="2"
-      android:versionName="0.02" package="mobi.omegacentauri.TinyLaunch"
+      android:versionCode="4"
+      android:versionName="0.04" package="mobi.omegacentauri.TinyLaunch"
       >
 
     <!--   			  android:configChanges="keyboard|keyboardHidden|orientation" -->
@@ -28,10 +28,10 @@
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
                 </intent-filter>
-<!--             <intent-filter>
+                             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" /> 
-            </intent-filter>  -->
+            </intent-filter> 
         </activity>
                 <receiver android:name="DirtinessReceiver">
         <intent-filter>
