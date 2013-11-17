@@ -6,7 +6,7 @@
         android:defaultValue="false"
         android:key="icons"/>
     <CheckBoxPreference
-    	android:title="Tile screen with buttons"
+    	android:title="Tiles"
     	android:defaultValue="false"
     	android:key="tile"/>
 </PreferenceScreen>
