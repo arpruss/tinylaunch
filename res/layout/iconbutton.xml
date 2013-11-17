@@ -3,6 +3,7 @@
     android:layout_width="wrap_content"
     android:orientation="vertical"
     android:layout_height="wrap_content"
+    android:gravity="center"
     android:clickable="true"
     android:background="@drawable/button_background"
     >
@@ -13,8 +14,8 @@ android:layout_height="48dp"
     />             
 <TextView
 android:id="@+id/text" 
-android:layout_width="48dp" 
-android:layout_height="26sp"
+android:layout_width="64dp" 
+android:layout_height="28sp"
 android:gravity="top|center_horizontal"
 android:textSize="11sp"
 />
