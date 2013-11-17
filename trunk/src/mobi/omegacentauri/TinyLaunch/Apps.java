@@ -169,6 +169,8 @@ public class Apps extends Activity {
 	}
 
 	private void makeTileList() {
+		final boolean icons = options.getBoolean(Options.PREF_ICONS, false);
+
 		final ArrayList<LineData> lines = new ArrayList<LineData>();
 		for (int i = 0 ; i < curCatData.size(); i += ICONS_PER_LINE) {
 			LineData l = new LineData(ICONS_PER_LINE);
@@ -202,7 +204,6 @@ public class Apps extends Activity {
 					v = convertView;
 				}
 				
-				final boolean icons = options.getBoolean(Options.PREF_ICONS, false);
 				final LineData l = lines.get(position);
 				
 				for (int i = 0; i < l.entries.length; i++) {
@@ -218,34 +219,28 @@ public class Apps extends Activity {
 						tv.setText(a.name);
 						ImageView img = (ImageView)entryView.findViewById(R.id.icon);
 						if (icons) {
-							File iconFile = MyCache.getIconFile(Apps.this, a.component);
-
-							if (iconFile.exists()) {
-								try {
-									img.setImageDrawable(Drawable.createFromStream(
-											new FileInputStream(iconFile), null));
-								} catch (Exception e) {
-									Log.e("TinyLaunch", ""+e);
-									img.setVisibility(View.INVISIBLE);
-								}
-								img.setVisibility(View.VISIBLE);
-							}
-							else {
-								img.setVisibility(View.INVISIBLE);
-							}
+							setIcon(img, a);
 						}
 						else {
 							img.setVisibility(View.GONE);
 						}
-						View.OnClickListener listener = new View.OnClickListener(){
+						entryView.setOnClickListener(new View.OnClickListener(){
 
 							@Override
 							public void onClick(View arg0) {
 								launch(a);
 							}
 
-							};
-						entryView.setOnClickListener(listener);					
+							});					
+
+						entryView.setOnLongClickListener(new View.OnLongClickListener() {
+							
+							@Override
+							public boolean onLongClick(View v) {
+								itemEdit(a);
+								return false;
+							}
+						});
 					}
 				}
 				for (int i = l.entries.length ; i < LineData.MAX_BUTTONS ; i++) {
@@ -258,9 +253,12 @@ public class Apps extends Activity {
 		};
 
 		list.setAdapter(adapter);
+		list.setDivider(null);
 	}
 	
 	private void makeSimpleList() {
+		final boolean icons = options.getBoolean(Options.PREF_ICONS, false);
+
 		ArrayAdapter<AppData> adapter = 
 				new ArrayAdapter<AppData>(this, 
 						R.layout.onelinenocheck, 
@@ -277,27 +275,12 @@ public class Apps extends Activity {
 				}
 
 				final AppData a = curCatData.get(position); 
-				final boolean icons = options.getBoolean(Options.PREF_ICONS, false);
 
 				TextView tv = (TextView)v.findViewById(R.id.text);
 				tv.setText(a.name);
 				ImageView img = (ImageView)v.findViewById(R.id.icon);
 				if (icons) {
-					File iconFile = MyCache.getIconFile(Apps.this, a.component);
-
-					if (iconFile.exists()) {
-						try {
-							img.setImageDrawable(Drawable.createFromStream(
-									new FileInputStream(iconFile), null));
-						} catch (Exception e) {
-							Log.e("TinyLaunch", ""+e);
-							img.setVisibility(View.INVISIBLE);
-						}
-						img.setVisibility(View.VISIBLE);
-					}
-					else {
-						img.setVisibility(View.INVISIBLE);
-					}
+					setIcon(img,a);
 				}
 				else {
 					img.setVisibility(View.GONE);
@@ -310,6 +293,7 @@ public class Apps extends Activity {
 		};
 
 		list.setAdapter(adapter);
+		list.setDivider(getResources().getDrawable(android.R.drawable.divider_horizontal_bright));
 
 		final ArrayAdapter<AppData> adapterSaved = adapter;
 
@@ -333,6 +317,27 @@ public class Apps extends Activity {
 
 	}
 
+	
+	void setIcon(ImageView img, AppData a) {
+		File iconFile = MyCache.getIconFile(Apps.this, a.component);
+
+		if (iconFile.exists()) {
+			try {
+				img.setImageDrawable(Drawable.createFromStream(
+						new FileInputStream(iconFile), null));
+			} catch (Exception e) {
+				Log.e("TinyLaunch", ""+e);
+				img.setImageDrawable(getResources().getDrawable(android.R.drawable.sym_def_app_icon));
+			}
+		}
+		else {
+			img.setImageDrawable(getResources().getDrawable(android.R.drawable.sym_def_app_icon));
+		}
+
+		img.setVisibility(View.VISIBLE);
+	}
+
+	
 	protected void itemEdit(final AppData item) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 

@@ -15,7 +15,7 @@ android:layout_height="48dp"
 android:id="@+id/text" 
 android:layout_width="48dp" 
 android:layout_height="26sp"
-android:gravity="center"
-android:textSize="10sp"
+android:gravity="top|center_horizontal"
+android:textSize="11sp"
 />
 </LinearLayout>
