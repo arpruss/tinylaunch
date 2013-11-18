@@ -62,7 +62,7 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 
 	@Override
 	protected ArrayList<AppData> doInBackground(Void... c) {
-		Log.v("getting", "installed");
+//		Log.v("getting", "installed");
 		
 		ArrayList<AppData> apps = new ArrayList<AppData>();
 		
@@ -79,7 +79,7 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 		if (!slow) {
 			ArrayList<AppData> cacheData = new ArrayList<AppData>();
 			MyCache.read(context, CACHE_NAME, cacheData);
-			Log.v("TinyLaunch", "cache "+cacheData.size());
+//			Log.v("TinyLaunch", "cache "+cacheData.size());
 			for (AppData a : cacheData) {
 				cache.put(a.component, a);
 			}
@@ -141,7 +141,7 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 				File iconFile = MyCache.getIconFile(context, component);
 				
 				if (!cacheValid || !iconFile.exists()) {
-					Log.v("TinyLaunch", "finding icon for "+name);
+//					Log.v("TinyLaunch", "finding icon for "+name);
 					try {
 						Drawable d = pm.getResourcesForActivity(cn)
 								.getDrawable(pm.getPackageInfo(
@@ -154,7 +154,7 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 							out.close();
 						}
 					} catch (Exception e) {
-						Log.e("TinyLaunch", ""+e);
+//						Log.e("TinyLaunch", ""+e);
 						iconFile.delete();
 					}
 				}

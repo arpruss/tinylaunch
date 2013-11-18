@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      android:versionCode="5"
-      android:versionName="0.05" package="mobi.omegacentauri.TinyLaunch"
+      android:versionCode="6"
+      android:versionName="0.06" package="mobi.omegacentauri.TinyLaunch"
       >
 
     <!--   			  android:configChanges="keyboard|keyboardHidden|orientation" -->
@@ -15,14 +15,14 @@
                   android:xlargeScreens="true"
                   android:anyDensity="true"/>
         
-  <application android:label="@string/app_name">
+  <application android:label="TinyLaunch">
         
  		<activity android:name=".Options" android:label="Options" />
         <activity android:name="mobi.omegacentauri.TinyLaunch.Apps"
       			  android:configChanges="keyboard|keyboardHidden|orientation"
                   android:launchMode="singleTask"
                   android:theme="@android:style/Theme.NoTitleBar"
-                  android:label="@string/app_name">
+                  android:label="TinyLaunch">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.HOME" />

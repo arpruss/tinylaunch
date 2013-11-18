@@ -30,7 +30,7 @@ public class MyCache {
 	public static boolean write(Context c, String fname, 
 			ArrayList<AppData> data) {
 		String path = genFilename(c, fname);
-		Log.v("TinyLaunch", "cache write "+path+" "+data.size()+" items");
+//		Log.v("TinyLaunch", "cache write "+path+" "+data.size()+" items");
 		try {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(
 					path+".temp"));
@@ -42,9 +42,9 @@ public class MyCache {
 				Log.e("TinyLaunch", "error renaming");
 				throw new IOException();
 			}
-			Log.v("TinyLaunch", "wrote cache to "+path);
+//			Log.v("TinyLaunch", "wrote cache to "+path);
 		} catch (IOException e) {
-			Log.e("TinyLaunch", ""+e);
+//			Log.e("TinyLaunch", ""+e);
 			new File(path+".tmp").delete();
 			return false;
 		}
@@ -83,12 +83,12 @@ public class MyCache {
 //			Drawable icon = pm.getPackageInfo(packageName, 0).applicationInfo.loadIcon(c.getPackageManager());
 			if (icon instanceof BitmapDrawable) {
 				Bitmap bmp = ((BitmapDrawable)icon).getBitmap();
-				Log.v("TinyLaunch", "icon "+bmp.getWidth()+"x"+bmp.getHeight());
+//				Log.v("TinyLaunch", "icon "+bmp.getWidth()+"x"+bmp.getHeight());
 				File iconFile = getIconFile(c, componentName);
 				FileOutputStream out = new FileOutputStream(iconFile);
 				bmp.compress(CompressFormat.PNG, 100, out);
 				out.close();
-				Log.v("TinyLaunch", "saved icon");
+//				Log.v("TinyLaunch", "saved icon");
 			}
 		} catch (Exception e) {
 			deleteIcon(c, componentName);
@@ -104,7 +104,7 @@ public class MyCache {
 		if (componentName.startsWith(" "))
 			return;
 		if (getIconFile(c, componentName).delete()) {
-			Log.v("TinyLaunch", "successful delete of "+componentName+" icon");
+//			Log.v("TinyLaunch", "successful delete of "+componentName+" icon");
 		}
 	}
 	

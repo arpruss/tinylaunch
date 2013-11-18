@@ -66,20 +66,20 @@ public class Apps extends Activity {
 	private Spinner spin;
 	public static final int ICONS_PER_LINE = 4;
 
-	private void message(String title, String msg) {
-		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-
-		alertDialog.setTitle(title);
-		alertDialog.setMessage(msg);
-		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, 
-				getResources().getText(R.string.ok), 
-				new DialogInterface.OnClickListener() {
-			public void onClick(DialogInterface dialog, int which) {} });
-		alertDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-			public void onCancel(DialogInterface dialog) {} });
-		alertDialog.show();
-
-	}
+//	private void message(String title, String msg) {
+//		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+//
+//		alertDialog.setTitle(title);
+//		alertDialog.setMessage(msg);
+//		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, 
+//				"OK", 
+//				new DialogInterface.OnClickListener() {
+//			public void onClick(DialogInterface dialog, int which) {} });
+//		alertDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+//			public void onCancel(DialogInterface dialog) {} });
+//		alertDialog.show();
+//
+//	}
 
 	public void loadList(boolean cleanCategory) {
 		ArrayList<AppData> data = new ArrayList<AppData>(); 
@@ -253,6 +253,8 @@ public class Apps extends Activity {
 		};
 
 		list.setAdapter(adapter);
+		list.setOnItemClickListener(null);
+		list.setOnItemLongClickListener(null);
 		list.setDivider(null);
 	}
 	
@@ -261,14 +263,14 @@ public class Apps extends Activity {
 
 		ArrayAdapter<AppData> adapter = 
 				new ArrayAdapter<AppData>(this, 
-						R.layout.onelinenocheck, 
+						R.layout.oneline, 
 						curCatData) {
 
 			public View getView(int position, View convertView, ViewGroup parent) {
 				View v;				
 
 				if (convertView == null) {
-					v = View.inflate(Apps.this, R.layout.onelinenocheck, null);
+					v = View.inflate(Apps.this, R.layout.oneline, null);
 				}
 				else {
 					v = convertView;
@@ -326,7 +328,7 @@ public class Apps extends Activity {
 				img.setImageDrawable(Drawable.createFromStream(
 						new FileInputStream(iconFile), null));
 			} catch (Exception e) {
-				Log.e("TinyLaunch", ""+e);
+//				Log.e("TinyLaunch", ""+e);
 				img.setImageDrawable(getResources().getDrawable(android.R.drawable.sym_def_app_icon));
 			}
 		}
@@ -370,7 +372,7 @@ public class Apps extends Activity {
 					new DialogInterface.OnMultiChoiceClickListener() {							
 				@Override
 				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-					Log.v("TinyLaunch", "setting "+item.name+" to "+isChecked);
+//					Log.v("TinyLaunch", "setting "+item.name+" to "+isChecked);
 					//						if (isChecked) 
 					//							categories.addToCategory(customCategoryNames[which], item);
 					//						else
@@ -504,7 +506,7 @@ public class Apps extends Activity {
 	public void onResume() {
 		super.onResume();
 
-		Log.v("TinyLaunch", "onResume");
+//		Log.v("TinyLaunch", "onResume");
 
 		loadList(false);
 		boolean needReload = false;
@@ -525,7 +527,7 @@ public class Apps extends Activity {
 		}
 
 		if (needReload || map.size() == 0 || options.getBoolean(Options.PREF_DIRTY, true)) {
-			Log.v("TinyLaunch", "scan");
+//			Log.v("TinyLaunch", "scan");
 			(new GetApps(this, false)).execute();
 		}
 	}
