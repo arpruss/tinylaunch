@@ -164,7 +164,7 @@ public class Categories {
 		
 		ArrayList<AppData> data = categories.get(cat);
 		if (data != null) {
-			Log.d("TinyLaunch", "adding "+a.name);
+//			Log.d("TinyLaunch", "adding "+a.name);
 			data.add(a);	
 			putEntries(catPath(cat), data);
 		}
@@ -205,9 +205,9 @@ public class Categories {
 	}
 	
 	public boolean addCategory(String c) {
-		Log.v("TinyLaunch", "adding "+c);
+//		Log.v("TinyLaunch", "adding "+c);
 		if (names.contains(c)) {
-			Log.v("TinyLaunch", "already used "+c);
+//			Log.v("TinyLaunch", "already used "+c);
 			return false;
 		}
 		try {
@@ -334,7 +334,7 @@ public class Categories {
 			return true;
 		
 		if (names.contains(c)) {
-			Log.v("TinyLaunch", "already used "+c);
+//			Log.v("TinyLaunch", "already used "+c);
 			return false;
 		}
 		
