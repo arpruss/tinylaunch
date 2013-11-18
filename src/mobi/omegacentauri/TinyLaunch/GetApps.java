@@ -48,7 +48,7 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 	public final static String CACHE_NAME = "apps"; 
 	private boolean slow;
 	ProgressDialog progress;
-	
+
 	GetApps(Apps c, boolean slow) {
 		this.context = c;
 		this.slow = slow;
@@ -62,40 +62,40 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 
 	@Override
 	protected ArrayList<AppData> doInBackground(Void... c) {
-//		Log.v("getting", "installed");
-		
+		//		Log.v("getting", "installed");
+
 		ArrayList<AppData> apps = new ArrayList<AppData>();
-		
+
 		Intent launchIntent = new Intent(Intent.ACTION_MAIN);
 		launchIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-		
+
 		boolean icons = context.options.getBoolean(Options.PREF_ICONS, false);
 		Map<String,AppData> cache = new HashMap<String,AppData>();
 
 		if (slow || !icons) {
 			MyCache.deleteIcons(context);
 		}
-	
+
 		if (!slow) {
 			ArrayList<AppData> cacheData = new ArrayList<AppData>();
 			MyCache.read(context, CACHE_NAME, cacheData);
-//			Log.v("TinyLaunch", "cache "+cacheData.size());
+			//			Log.v("TinyLaunch", "cache "+cacheData.size());
 			for (AppData a : cacheData) {
 				cache.put(a.component, a);
 			}
 		}
-		
+
 		List<ResolveInfo> list = 
-			pm.queryIntentActivities(launchIntent, 0);
-		
+				pm.queryIntentActivities(launchIntent, 0);
+
 		String component;
 		String name;
 		boolean cacheValid;
 		//int versionCode;
-		
+
 		for (int i = 0 ; i < list.size() ; i++) {
 			publishProgress(i, list.size());
-			
+
 			ResolveInfo info = list.get(i);
 
 			ComponentName cn = new ComponentName(info.activityInfo.packageName, 
@@ -104,12 +104,12 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 			name = null;
 			cacheValid = false;
 			//versionCode = -1;
-			
-//			try {
-//				versionCode = pm.getPackageInfo(info.activityInfo.packageName, 0).versionCode;
-//			} catch (NameNotFoundException e1) {
-//			}
-			
+
+			//			try {
+			//				versionCode = pm.getPackageInfo(info.activityInfo.packageName, 0).versionCode;
+			//			} catch (NameNotFoundException e1) {
+			//			}
+
 			if (!slow) {
 				AppData a = cache.get(component);
 				if (a != null) {
@@ -134,14 +134,14 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 					}
 				}
 			}
-			
+
 			apps.add(new AppData(component, name));
-			
+
 			if (icons) {
 				File iconFile = MyCache.getIconFile(context, component);
-				
+
 				if (!cacheValid || !iconFile.exists()) {
-//					Log.v("TinyLaunch", "finding icon for "+name);
+					//					Log.v("TinyLaunch", "finding icon for "+name);
 					try {
 						Drawable d = pm.getResourcesForActivity(cn)
 								.getDrawable(pm.getPackageInfo(
@@ -154,25 +154,25 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 							out.close();
 						}
 					} catch (Exception e) {
-//						Log.e("TinyLaunch", ""+e);
+						//						Log.e("TinyLaunch", ""+e);
 						iconFile.delete();
 					}
 				}
 			}
 		}
-		
+
 		MyCache.write(context, CACHE_NAME, apps);
 		MyCache.cleanIcons(context, apps);
 		context.options.edit().putBoolean(Options.PREF_DIRTY,false).commit();
-		
+
 		publishProgress(list.size(), list.size());
 
 		return apps;
 	}
-	
+
 	@Override
 	protected void onPreExecute() {
-//		listView.setVisibility(View.GONE);
+		//		listView.setVisibility(View.GONE);
 		progress = new ProgressDialog(context);
 		progress.setCancelable(false);
 		progress.setMessage("Getting applications...");
@@ -180,20 +180,20 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 		progress.setIndeterminate(true);
 		progress.show();
 	}
-	
+
 	protected void onProgressUpdate(Integer... p) {
 		progress.setIndeterminate(false);
 		progress.setMax(p[1]);
 		progress.setProgress(p[0]);
 	}
-	
+
 	@Override
 	protected void onPostExecute(ArrayList<AppData> data) {
-		
+
 		context.loadList(data, true);
 		context.options.edit().putBoolean(Options.PREF_PREV_ICONS, 
 				context.options.getBoolean(Options.PREF_ICONS, false)).commit();
-		
+
 		progress.dismiss();
 	}
 }

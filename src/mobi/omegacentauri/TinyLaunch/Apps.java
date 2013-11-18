@@ -66,20 +66,20 @@ public class Apps extends Activity {
 	private Spinner spin;
 	public static final int ICONS_PER_LINE = 4;
 
-//	private void message(String title, String msg) {
-//		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
-//
-//		alertDialog.setTitle(title);
-//		alertDialog.setMessage(msg);
-//		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, 
-//				"OK", 
-//				new DialogInterface.OnClickListener() {
-//			public void onClick(DialogInterface dialog, int which) {} });
-//		alertDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
-//			public void onCancel(DialogInterface dialog) {} });
-//		alertDialog.show();
-//
-//	}
+	//	private void message(String title, String msg) {
+	//		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
+	//
+	//		alertDialog.setTitle(title);
+	//		alertDialog.setMessage(msg);
+	//		alertDialog.setButton(DialogInterface.BUTTON_POSITIVE, 
+	//				"OK", 
+	//				new DialogInterface.OnClickListener() {
+	//			public void onClick(DialogInterface dialog, int which) {} });
+	//		alertDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+	//			public void onCancel(DialogInterface dialog) {} });
+	//		alertDialog.show();
+	//
+	//	}
 
 	public void loadList(boolean cleanCategory) {
 		ArrayList<AppData> data = new ArrayList<AppData>(); 
@@ -158,7 +158,7 @@ public class Apps extends Activity {
 		else
 			makeSimpleList();
 	}
-	
+
 	private void launch(AppData a) {
 		Intent i = new Intent(Intent.ACTION_MAIN);
 		i.addCategory(Intent.CATEGORY_LAUNCHER);
@@ -169,6 +169,8 @@ public class Apps extends Activity {
 	}
 
 	private void makeTileList() {
+		list.setAdapter(null);
+
 		final boolean icons = options.getBoolean(Options.PREF_ICONS, false);
 
 		final ArrayList<LineData> lines = new ArrayList<LineData>();
@@ -182,13 +184,13 @@ public class Apps extends Activity {
 					l.entries[j] = null;
 			}
 		}
-			
-			
+
+
 		ArrayAdapter<LineData> adapter = 
 				new ArrayAdapter<LineData>(this, 
 						R.layout.iconline, 
 						lines) {
-			
+
 			@Override
 			public boolean isEnabled(int position) {
 				return false;
@@ -203,21 +205,25 @@ public class Apps extends Activity {
 				else {
 					v = convertView;
 				}
-				
+
 				final LineData l = lines.get(position);
-				
+
 				for (int i = 0; i < l.entries.length; i++) {
 					View entryView = v.findViewById(LineData.IDs[i]);
 					final AppData a = l.entries[i];
-					
+					TextView tv = (TextView)entryView.findViewById(R.id.text);
+					ImageView img = (ImageView)entryView.findViewById(R.id.icon);
+
 					if (a == null) {
+						tv.setText("");
+						img.setImageResource(android.R.color.transparent);
 						entryView.setVisibility(View.INVISIBLE);
+						entryView.setOnClickListener(null);
+						entryView.setOnLongClickListener(null);
 					}
 					else {
 						entryView.setVisibility(View.VISIBLE);
-						TextView tv = (TextView)entryView.findViewById(R.id.text);
 						tv.setText(a.name);
-						ImageView img = (ImageView)entryView.findViewById(R.id.icon);
 						if (icons) {
 							setIcon(img, a);
 						}
@@ -231,10 +237,10 @@ public class Apps extends Activity {
 								launch(a);
 							}
 
-							});					
+						});					
 
 						entryView.setOnLongClickListener(new View.OnLongClickListener() {
-							
+
 							@Override
 							public boolean onLongClick(View v) {
 								itemEdit(a);
@@ -246,7 +252,7 @@ public class Apps extends Activity {
 				for (int i = l.entries.length ; i < LineData.MAX_BUTTONS ; i++) {
 					v.findViewById(LineData.IDs[i]).setVisibility(View.GONE);
 				}
-				
+
 				return v;
 			}			
 
@@ -257,8 +263,10 @@ public class Apps extends Activity {
 		list.setOnItemLongClickListener(null);
 		list.setDivider(null);
 	}
-	
+
 	private void makeSimpleList() {
+		list.setAdapter(null);
+
 		final boolean icons = options.getBoolean(Options.PREF_ICONS, false);
 
 		ArrayAdapter<AppData> adapter = 
@@ -276,7 +284,7 @@ public class Apps extends Activity {
 					v = convertView;
 				}
 
-				final AppData a = curCatData.get(position); 
+				AppData a = curCatData.get(position); 
 
 				TextView tv = (TextView)v.findViewById(R.id.text);
 				tv.setText(a.name);
@@ -288,7 +296,6 @@ public class Apps extends Activity {
 					img.setVisibility(View.GONE);
 				}
 
-				// TODO: icon
 				return v;
 			}			
 
@@ -319,7 +326,7 @@ public class Apps extends Activity {
 
 	}
 
-	
+
 	void setIcon(ImageView img, AppData a) {
 		File iconFile = MyCache.getIconFile(Apps.this, a.component);
 
@@ -328,18 +335,18 @@ public class Apps extends Activity {
 				img.setImageDrawable(Drawable.createFromStream(
 						new FileInputStream(iconFile), null));
 			} catch (Exception e) {
-//				Log.e("TinyLaunch", ""+e);
-				img.setImageDrawable(getResources().getDrawable(android.R.drawable.sym_def_app_icon));
+				//				Log.e("TinyLaunch", ""+e);
+				img.setImageResource(android.R.drawable.sym_def_app_icon);
 			}
 		}
 		else {
-			img.setImageDrawable(getResources().getDrawable(android.R.drawable.sym_def_app_icon));
+			img.setImageResource(android.R.drawable.sym_def_app_icon);
 		}
 
 		img.setVisibility(View.VISIBLE);
 	}
 
-	
+
 	protected void itemEdit(final AppData item) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
@@ -372,7 +379,7 @@ public class Apps extends Activity {
 					new DialogInterface.OnMultiChoiceClickListener() {							
 				@Override
 				public void onClick(DialogInterface dialog, int which, boolean isChecked) {
-//					Log.v("TinyLaunch", "setting "+item.name+" to "+isChecked);
+					//					Log.v("TinyLaunch", "setting "+item.name+" to "+isChecked);
 					//						if (isChecked) 
 					//							categories.addToCategory(customCategoryNames[which], item);
 					//						else
@@ -506,7 +513,7 @@ public class Apps extends Activity {
 	public void onResume() {
 		super.onResume();
 
-//		Log.v("TinyLaunch", "onResume");
+		//		Log.v("TinyLaunch", "onResume");
 
 		loadList(false);
 		boolean needReload = false;
@@ -527,7 +534,7 @@ public class Apps extends Activity {
 		}
 
 		if (needReload || map.size() == 0 || options.getBoolean(Options.PREF_DIRTY, true)) {
-//			Log.v("TinyLaunch", "scan");
+			//			Log.v("TinyLaunch", "scan");
 			(new GetApps(this, false)).execute();
 		}
 	}
