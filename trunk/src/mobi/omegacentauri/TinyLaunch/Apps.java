@@ -2,55 +2,36 @@ package mobi.omegacentauri.TinyLaunch;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import mobi.omegacentauri.TinyLaunch.R;
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.app.AlertDialog;
-import android.app.AlertDialog.Builder;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
-import android.content.res.Resources.NotFoundException;
-import android.graphics.Bitmap;
-import android.graphics.Bitmap.CompressFormat;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.Adapter;
 import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.Toast;
 
 public class Apps extends Activity {
@@ -62,7 +43,7 @@ public class Apps extends Activity {
 	Map<String,AppData> map;
 	public SharedPreferences options;
 	final static String PREF_APPS = "apps";
-	private PackageManager packageManager;
+	//private PackageManager packageManager;
 	private Spinner spin;
 	public static final int ICONS_PER_LINE = 4;
 
@@ -206,11 +187,34 @@ public class Apps extends Activity {
 					v = convertView;
 				}
 
-				final LineData l = lines.get(position);
+				LineData l = lines.get(position);
+				
+				final View.OnClickListener onClickListener = new View.OnClickListener() {
+
+					@Override
+					public void onClick(View arg0) {
+						if (arg0.getTag() instanceof AppData)
+							launch((AppData)arg0.getTag());
+					}
+
+				};
+
+				final View.OnLongClickListener onLongClickListener = new View.OnLongClickListener() {
+
+					@Override
+					public boolean onLongClick(View arg0) {
+						if (arg0.getTag() instanceof AppData)
+							itemEdit((AppData)arg0.getTag());
+						return false;
+					}
+
+				};
 
 				for (int i = 0; i < l.entries.length; i++) {
 					View entryView = v.findViewById(LineData.IDs[i]);
-					final AppData a = l.entries[i];
+					AppData a = l.entries[i];
+					entryView.setTag(a);
+					
 					TextView tv = (TextView)entryView.findViewById(R.id.text);
 					ImageView img = (ImageView)entryView.findViewById(R.id.icon);
 
@@ -230,27 +234,16 @@ public class Apps extends Activity {
 						else {
 							img.setVisibility(View.GONE);
 						}
-						entryView.setOnClickListener(new View.OnClickListener(){
-
-							@Override
-							public void onClick(View arg0) {
-								launch(a);
-							}
-
-						});					
-
-						entryView.setOnLongClickListener(new View.OnLongClickListener() {
-
-							@Override
-							public boolean onLongClick(View v) {
-								itemEdit(a);
-								return false;
-							}
-						});
+						entryView.setOnClickListener(onClickListener);					
+						entryView.setOnLongClickListener(onLongClickListener);
 					}
 				}
 				for (int i = l.entries.length ; i < LineData.MAX_BUTTONS ; i++) {
-					v.findViewById(LineData.IDs[i]).setVisibility(View.GONE);
+					View entryView = v.findViewById(LineData.IDs[i]);
+					entryView.setVisibility(View.GONE);
+					entryView.setOnClickListener(null);
+					entryView.setOnLongClickListener(null);
+					entryView.setTag(null);
 				}
 
 				return v;
@@ -424,9 +417,8 @@ public class Apps extends Activity {
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 
-
 		options = PreferenceManager.getDefaultSharedPreferences(this);
-		packageManager = getPackageManager();
+		//packageManager = getPackageManager();
 
 		setContentView(R.layout.apps);
 
@@ -515,6 +507,11 @@ public class Apps extends Activity {
 
 		//		Log.v("TinyLaunch", "onResume");
 
+		if (options.getBoolean(Options.PREF_PORTRAIT, false))
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		else
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+		
 		loadList(false);
 		boolean needReload = false;
 

@@ -1,9 +1,6 @@
 package mobi.omegacentauri.TinyLaunch;
 
-import android.app.Activity;
-import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
@@ -14,7 +11,9 @@ public class Options extends PreferenceActivity {
 	public final static String PREF_PREV_ICONS = "prevIcons";
 	public static final String PREF_CATEGORY = "category";
 	public static final String PREF_DIRTY = "dirty";
+	public static final String PREF_PORTRAIT = "portrait";
 	
+	@SuppressWarnings("deprecation")
 	@Override
 	public void onCreate(Bundle icicle) {
 		super.onCreate(icicle);
@@ -25,6 +24,13 @@ public class Options extends PreferenceActivity {
 	@Override
 	public void onResume() {
 		super.onResume();
+		
+		if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(Options.PREF_PORTRAIT, false))
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+		else
+			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR);
+		
+
 	}
 	
 	@Override

@@ -5,8 +5,6 @@ import java.io.BufferedWriter;
 import java.io.IOException;
 import java.util.Comparator;
 
-import android.util.Log;
-
 public class AppData implements Comparable<AppData> {
 	public String component;
 	public String name;
@@ -14,27 +12,27 @@ public class AppData implements Comparable<AppData> {
 //	public int versionCode;
 	private static final String COMPONENT = "C";
 	private static final String NAME = "N";
-	private static final String VERSION = "V";
+//	private static final String VERSION = "V";
 	
 	public static final Comparator<AppData> NameComparator = 
 		new Comparator<AppData>() {
 
 		public int compare(AppData a, AppData b) {
-//			Log.v("DoublePower", a.component+" "+b.component);
-			if (a.component.startsWith(" ")) {
-				if (b.component.startsWith(" ")) {
-					return a.name.compareToIgnoreCase(b.name);
-				}
-				else {
-					return -1;
-				}
-			}
-			else if (b.component.startsWith(" ")) {
-				return 1;
-			}
-			else {
-				return a.name.compareToIgnoreCase(b.name);
-			}
+			return a.name.compareToIgnoreCase(b.name);
+//			if (a.component.startsWith(" ")) {
+//				if (b.component.startsWith(" ")) {
+//					return a.name.compareToIgnoreCase(b.name);
+//				}
+//				else {
+//					return -1;
+//				}
+//			}
+//			else if (b.component.startsWith(" ")) {
+//				return 1;
+//			}
+//			else {
+//				return a.name.compareToIgnoreCase(b.name);
+//			}
 		}
 	};
 	
