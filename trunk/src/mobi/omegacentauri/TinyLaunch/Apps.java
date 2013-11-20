@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
@@ -145,10 +146,13 @@ public class Apps extends Activity {
 		curCatData = categories.filterApps(map);
 		//Log.v("TinyLaunch", "filtered");
 
-		if (options.getBoolean(Options.PREF_TILE, false))
+		if (options.getBoolean(Options.PREF_TILE, true))
 			makeTileList();
 		else
 			makeSimpleList();
+		
+//		list.setFastScrollEnabled(true);
+		//list.setFastScrollAlwaysVisible(true);
 		//Log.v("TinyLaunch", "made list");
 	}
 
@@ -164,7 +168,7 @@ public class Apps extends Activity {
 	private void makeTileList() {
 		list.setAdapter(null);
 
-		final boolean icons = options.getBoolean(Options.PREF_ICONS, false);
+		final boolean icons = options.getBoolean(Options.PREF_ICONS, true);
 
 		final ArrayList<LineData> lines = new ArrayList<LineData>();
 		for (int i = 0 ; i < curCatData.size(); i += ICONS_PER_LINE) {
@@ -272,7 +276,7 @@ public class Apps extends Activity {
 	private void makeSimpleList() {
 		list.setAdapter(null);
 
-		final boolean icons = options.getBoolean(Options.PREF_ICONS, false);
+		final boolean icons = options.getBoolean(Options.PREF_ICONS, true);
 
 		ArrayAdapter<AppData> adapter = 
 				new ArrayAdapter<AppData>(this, 
@@ -362,7 +366,7 @@ public class Apps extends Activity {
 				Uri uri = Uri.parse("package:"+ComponentName.unflattenFromString(
 						item.component).getPackageName());
 				startActivity(new Intent(Intent.ACTION_DELETE, uri));
-			//	options.edit().putBoolean(Options.PREF_DIRTY, true).commit();
+			//	options.edit().putBoolean(Options.PREF_DIRTY, false).commit();
 			}});
 
 		ArrayList<String> editableCategories =  categories.getEditableCategories();
@@ -435,7 +439,7 @@ public class Apps extends Activity {
 			@Override
 			public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
 					String key) {
-				Log.v("TinyLaunch", "pref change detected");
+				//Log.v("TinyLaunch", "pref change detected");
 				if (key.equals(Options.PREF_DIRTY) && sharedPreferences.getBoolean(Options.PREF_DIRTY, false)) {
 						if (scanner != null) 
 							scanner = new GetApps(Apps.this);
@@ -550,8 +554,8 @@ public class Apps extends Activity {
 			needReload = true;
 		}
 		else {
-			boolean icons = options.getBoolean(Options.PREF_ICONS, false);
-			if (icons != options.getBoolean(Options.PREF_PREV_ICONS, false)) {
+			boolean icons = options.getBoolean(Options.PREF_ICONS, true);
+			if (icons != options.getBoolean(Options.PREF_PREV_ICONS, true)) {
 				if (icons)
 					needReload = true;
 				else {
@@ -561,7 +565,7 @@ public class Apps extends Activity {
 			}
 		}
 
-		if (needReload || map.size() == 0 || options.getBoolean(Options.PREF_DIRTY, true)) {
+		if (needReload || map.size() == 0 || options.getBoolean(Options.PREF_DIRTY, false)) {
 			//			Log.v("TinyLaunch", "scan");
 			if (scanner == null)
 				scanner = new GetApps(this);
