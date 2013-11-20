@@ -18,6 +18,7 @@ import java.util.Map;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 public class Categories {
 	Context context;
@@ -78,6 +79,7 @@ public class Categories {
 	}
 	
 	public void setCurCategory(String category, boolean push) {
+		//Log.v("TinyLaunch", "setCur "+category+" "+push);
 		if (push)
 			pushCategory(curCategory);
 		curCategory = category;
@@ -95,6 +97,7 @@ public class Categories {
 			return;
 		if (history.size() >= HISTORY_MAX)
 			history.remove(0);
+		//Log.v("TinyLaunch", "push "+c);
 		history.add(c);
 	}
 	
@@ -102,8 +105,10 @@ public class Categories {
 		while (history.size() > 0) {
 			String c = history.get(history.size()-1);
 			history.remove(history.size()-1);
-			if (names.contains(c))
+			if (names.contains(c)) {
+				//Log.v("TinyLaunch", "pop "+history.size()+" "+c);
 				return c;
+			}
 		}
 		return ALL;
 //		return null;

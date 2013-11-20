@@ -14,9 +14,9 @@ android:layout_height="48dp"
     />             
 <TextView
 android:id="@+id/text" 
-android:layout_width="64dp" 
+android:layout_width="72dp" 
 android:layout_height="28sp"
 android:gravity="top|center_horizontal"
-android:textSize="11sp"
+android:textSize="12sp"
 />
 </LinearLayout>
