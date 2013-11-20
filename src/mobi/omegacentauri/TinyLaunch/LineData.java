@@ -1,11 +1,5 @@
 package mobi.omegacentauri.TinyLaunch;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.util.Comparator;
-
-import android.util.Log;
 
 public class LineData {
 	public AppData[] entries;

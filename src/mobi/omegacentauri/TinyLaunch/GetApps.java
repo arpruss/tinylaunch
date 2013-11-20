@@ -1,46 +1,22 @@
 package mobi.omegacentauri.TinyLaunch;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import android.widget.CheckBox;
-import java.util.List;
-
-import mobi.omegacentauri.TinyLaunch.R;
-
-import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.pm.ResolveInfo;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.CompressFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
-import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.CompoundButton.OnCheckedChangeListener;
-import android.widget.AdapterView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.Spinner;
-import android.widget.TextView;
 
 public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 	final PackageManager pm;
@@ -56,9 +32,9 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 
 	}
 
-	private boolean profilable(ApplicationInfo a) {
-		return true;
-	}
+//	private boolean profilable(ApplicationInfo a) {
+//		return true;
+//	}
 
 	@Override
 	protected ArrayList<AppData> doInBackground(Void... c) {
@@ -194,6 +170,10 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 		context.options.edit().putBoolean(Options.PREF_PREV_ICONS, 
 				context.options.getBoolean(Options.PREF_ICONS, false)).commit();
 
-		progress.dismiss();
+		try {
+			progress.dismiss();
+		}
+		catch (Exception e) {
+		}
 	}
 }

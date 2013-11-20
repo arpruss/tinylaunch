@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URI;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
@@ -16,12 +15,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.http.client.utils.URLEncodedUtils;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import android.util.Log;
 
 public class Categories {
 	Context context;
@@ -36,7 +32,6 @@ public class Categories {
 	private ArrayList<String> history;
 	private static final int HISTORY_MAX = 10;
 	
-	@SuppressWarnings("deprecation")
 	public Categories(Context context, Map<String,AppData> map) {
 		this.context = context;
 		this.map = map;
@@ -54,6 +49,7 @@ public class Categories {
 		curCategory = options.getString(Options.PREF_CATEGORY, ALL);
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void loadCategories() {
 		for (File f : context.getFilesDir().listFiles()) {
 			String n = f.getName();
@@ -119,8 +115,9 @@ public class Categories {
 	
 	private ArrayList<AppData> getEntries(File f) {
 		ArrayList<AppData> data = new ArrayList<AppData>();
+		BufferedReader reader = null;
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(f));
+			reader = new BufferedReader(new FileReader(f));
 			
 			String d;
 			
@@ -135,6 +132,12 @@ public class Categories {
 		} catch (FileNotFoundException e) {
 		} catch (IOException e) {
 		}
+		
+		if (reader != null)
+			try {
+				reader.close();
+			} catch (IOException e) {
+			}
 		
 		return data;
 	}

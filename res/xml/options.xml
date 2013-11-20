@@ -6,7 +6,12 @@
         android:defaultValue="false"
         android:key="icons"/>
     <CheckBoxPreference
-    	android:title="Tiles"
+    	android:title="Tile view"
     	android:defaultValue="false"
     	android:key="tile"/>
+    <CheckBoxPreference 
+        android:title="Always portrait"
+        android:defaultValue="false"
+        android:key="portrait"
+        />
 </PreferenceScreen>
