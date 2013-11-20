@@ -13,6 +13,6 @@ public class DirtinessReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		SharedPreferences options = PreferenceManager.getDefaultSharedPreferences(context);
 		options.edit().putBoolean(Options.PREF_DIRTY, true).commit();
-		Log.v("TinyLaunch", "marked as dirty");
+		//Log.v("TinyLaunch", "marked as dirty");
 	}
 }

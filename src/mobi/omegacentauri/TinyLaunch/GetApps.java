@@ -43,7 +43,7 @@ public class GetApps extends AsyncTask<Boolean, Integer, ArrayList<AppData>> {
 		Intent launchIntent = new Intent(Intent.ACTION_MAIN);
 		launchIntent.addCategory(Intent.CATEGORY_LAUNCHER);
 
-		boolean icons = context.options.getBoolean(Options.PREF_ICONS, false);
+		boolean icons = context.options.getBoolean(Options.PREF_ICONS, true);
 		Map<String,AppData> cache = new HashMap<String,AppData>();
 
 		if (slow[0] || !icons) {
@@ -165,7 +165,7 @@ public class GetApps extends AsyncTask<Boolean, Integer, ArrayList<AppData>> {
 
 		context.loadList(data, true);
 		context.options.edit().putBoolean(Options.PREF_PREV_ICONS, 
-				context.options.getBoolean(Options.PREF_ICONS, false)).commit();
+				context.options.getBoolean(Options.PREF_ICONS, true)).commit();
 		context.options.edit().putBoolean(Options.PREF_DIRTY,false).commit();
 
 		try {
