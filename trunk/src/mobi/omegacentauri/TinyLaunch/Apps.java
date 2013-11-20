@@ -13,12 +13,16 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.AsyncTask;
+import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -46,6 +50,8 @@ public class Apps extends Activity {
 	//private PackageManager packageManager;
 	private Spinner spin;
 	public static final int ICONS_PER_LINE = 4;
+	GetApps scanner = null;
+	private OnSharedPreferenceChangeListener prefListener;
 
 	//	private void message(String title, String msg) {
 	//		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
@@ -117,12 +123,15 @@ public class Apps extends Activity {
 		spin.setSelection(pos);
 
 		spin.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-
 			@Override
 			public void onItemSelected(AdapterView<?> arg0, View arg1,
 					int catNum, long arg3) {
-				categories.setCurCategory(cats.get(catNum));
-				loadFilteredApps();
+				//Log.v("TinyLaunch", "selected from spinner");
+				String newCat = cats.get(catNum);
+				if (!newCat.equals(categories.getCurCategory())) {
+					categories.setCurCategory(newCat);
+					loadFilteredApps();
+				}
 			}
 
 			@Override
@@ -132,12 +141,15 @@ public class Apps extends Activity {
 	}
 
 	public void loadFilteredApps() {		
+		//Log.v("TinyLaunch", "filtering");
 		curCatData = categories.filterApps(map);
+		//Log.v("TinyLaunch", "filtered");
 
 		if (options.getBoolean(Options.PREF_TILE, false))
 			makeTileList();
 		else
 			makeSimpleList();
+		//Log.v("TinyLaunch", "made list");
 	}
 
 	private void launch(AppData a) {
@@ -350,7 +362,7 @@ public class Apps extends Activity {
 				Uri uri = Uri.parse("package:"+ComponentName.unflattenFromString(
 						item.component).getPackageName());
 				startActivity(new Intent(Intent.ACTION_DELETE, uri));
-				options.edit().putBoolean(Options.PREF_DIRTY, true).commit();
+			//	options.edit().putBoolean(Options.PREF_DIRTY, true).commit();
 			}});
 
 		ArrayList<String> editableCategories =  categories.getEditableCategories();
@@ -419,7 +431,23 @@ public class Apps extends Activity {
 
 		options = PreferenceManager.getDefaultSharedPreferences(this);
 		//packageManager = getPackageManager();
+		prefListener = new OnSharedPreferenceChangeListener() {			
+			@Override
+			public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
+					String key) {
+				Log.v("TinyLaunch", "pref change detected");
+				if (key.equals(Options.PREF_DIRTY) && sharedPreferences.getBoolean(Options.PREF_DIRTY, false)) {
+						if (scanner != null) 
+							scanner = new GetApps(Apps.this);
+						if (scanner.getStatus() != AsyncTask.Status.RUNNING)
+							scanner.execute(false);
+					}
+			}
+		};
+		
+		options.registerOnSharedPreferenceChangeListener(prefListener);
 
+		
 		setContentView(R.layout.apps);
 
 		//       getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD);
@@ -438,7 +466,10 @@ public class Apps extends Activity {
 		//    		(new GetApps(this, false)).execute();
 		//    		return true;
 		case R.id.full_scan:
-			(new GetApps(this, true)).execute();
+			if (scanner == null)
+				scanner = new GetApps(this);
+			if (scanner.getStatus() != AsyncTask.Status.RUNNING) 
+				scanner.execute(true);
 			return true;
 		case R.id.options:
 			startActivity(new Intent(this, Options.class));
@@ -532,7 +563,11 @@ public class Apps extends Activity {
 
 		if (needReload || map.size() == 0 || options.getBoolean(Options.PREF_DIRTY, true)) {
 			//			Log.v("TinyLaunch", "scan");
-			(new GetApps(this, false)).execute();
+			if (scanner == null)
+				scanner = new GetApps(this);
+			
+			if (scanner.getStatus() != Status.RUNNING)
+				scanner.execute(false);
 		}
 	}
 

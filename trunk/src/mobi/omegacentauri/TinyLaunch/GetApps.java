@@ -18,16 +18,14 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 
-public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
+public class GetApps extends AsyncTask<Boolean, Integer, ArrayList<AppData>> {
 	final PackageManager pm;
 	final Apps	 context;
 	public final static String CACHE_NAME = "apps"; 
-	private boolean slow;
 	ProgressDialog progress;
 
-	GetApps(Apps c, boolean slow) {
+	GetApps(Apps c) {
 		this.context = c;
-		this.slow = slow;
 		pm = context.getPackageManager();
 
 	}
@@ -37,7 +35,7 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 //	}
 
 	@Override
-	protected ArrayList<AppData> doInBackground(Void... c) {
+	protected ArrayList<AppData> doInBackground(Boolean... slow) {
 		//		Log.v("getting", "installed");
 
 		ArrayList<AppData> apps = new ArrayList<AppData>();
@@ -48,11 +46,11 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 		boolean icons = context.options.getBoolean(Options.PREF_ICONS, false);
 		Map<String,AppData> cache = new HashMap<String,AppData>();
 
-		if (slow || !icons) {
+		if (slow[0] || !icons) {
 			MyCache.deleteIcons(context);
 		}
 
-		if (!slow) {
+		if (!slow[0]) {
 			ArrayList<AppData> cacheData = new ArrayList<AppData>();
 			MyCache.read(context, CACHE_NAME, cacheData);
 			//			Log.v("TinyLaunch", "cache "+cacheData.size());
@@ -86,7 +84,7 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 			//			} catch (NameNotFoundException e1) {
 			//			}
 
-			if (!slow) {
+			if (!slow[0]) {
 				AppData a = cache.get(component);
 				if (a != null) {
 					name = a.name;
@@ -139,7 +137,6 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 
 		MyCache.write(context, CACHE_NAME, apps);
 		MyCache.cleanIcons(context, apps);
-		context.options.edit().putBoolean(Options.PREF_DIRTY,false).commit();
 
 		publishProgress(list.size(), list.size());
 
@@ -169,6 +166,7 @@ public class GetApps extends AsyncTask<Void, Integer, ArrayList<AppData>> {
 		context.loadList(data, true);
 		context.options.edit().putBoolean(Options.PREF_PREV_ICONS, 
 				context.options.getBoolean(Options.PREF_ICONS, false)).commit();
+		context.options.edit().putBoolean(Options.PREF_DIRTY,false).commit();
 
 		try {
 			progress.dismiss();
