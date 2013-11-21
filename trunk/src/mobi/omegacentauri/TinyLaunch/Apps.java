@@ -32,8 +32,10 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -51,6 +53,9 @@ public class Apps extends Activity {
 	//private PackageManager packageManager;
 	private Spinner spin;
 	public static final int ICONS_PER_LINE = 4;
+	public static final int MIN_BUTTONS = 4;
+	public static final int MAX_BUTTONS = 4;
+	public int[] IDs = {R.id.button1, R.id.button2, R.id.button3, R.id.button4};
 	GetApps scanner = null;
 	private OnSharedPreferenceChangeListener prefListener;
 
@@ -170,29 +175,35 @@ public class Apps extends Activity {
 
 		final boolean icons = options.getBoolean(Options.PREF_ICONS, true);
 
-		final ArrayList<LineData> lines = new ArrayList<LineData>();
-		for (int i = 0 ; i < curCatData.size(); i += ICONS_PER_LINE) {
-			LineData l = new LineData(ICONS_PER_LINE);
-			lines.add(l);
-			for (int j = 0 ; j < ICONS_PER_LINE ; j++) {
-				if (i+j < curCatData.size())
-					l.entries[j] = curCatData.get(i+j);
-				else
-					l.entries[j] = null;
+		final View.OnClickListener onClickListener = new View.OnClickListener() {
+
+			@Override
+			public void onClick(View arg0) {
+				if (arg0.getTag() instanceof AppData)
+					launch((AppData)arg0.getTag());
 			}
-		}
 
+		};
 
-		ArrayAdapter<LineData> adapter = 
-				new ArrayAdapter<LineData>(this, 
-						R.layout.iconline, 
-						lines) {
+		final View.OnLongClickListener onLongClickListener = new View.OnLongClickListener() {
+
+			@Override
+			public boolean onLongClick(View arg0) {
+				if (arg0.getTag() instanceof AppData)
+					itemEdit((AppData)arg0.getTag());
+				return false;
+			}
+
+		};
+
+		BaseAdapter adapter = new BaseAdapter() {
 
 			@Override
 			public boolean isEnabled(int position) {
 				return false;
 			}
 
+			@SuppressLint("NewApi")
 			public View getView(int position, View convertView, ViewGroup parent) {
 				View v;				
 
@@ -203,32 +214,15 @@ public class Apps extends Activity {
 					v = convertView;
 				}
 
-				LineData l = lines.get(position);
-				
-				final View.OnClickListener onClickListener = new View.OnClickListener() {
+				for (int i = 0; i < ICONS_PER_LINE ; i++) {
+					View entryView = v.findViewById(IDs[i]);
+					int entryPos = position * ICONS_PER_LINE + i;
+					AppData a;
+					if (entryPos < curCatData.size())
+						a = curCatData.get(entryPos);
+					else
+						a= null;
 
-					@Override
-					public void onClick(View arg0) {
-						if (arg0.getTag() instanceof AppData)
-							launch((AppData)arg0.getTag());
-					}
-
-				};
-
-				final View.OnLongClickListener onLongClickListener = new View.OnLongClickListener() {
-
-					@Override
-					public boolean onLongClick(View arg0) {
-						if (arg0.getTag() instanceof AppData)
-							itemEdit((AppData)arg0.getTag());
-						return false;
-					}
-
-				};
-
-				for (int i = 0; i < l.entries.length; i++) {
-					View entryView = v.findViewById(LineData.IDs[i]);
-					AppData a = l.entries[i];
 					entryView.setTag(a);
 					
 					TextView tv = (TextView)entryView.findViewById(R.id.text);
@@ -244,6 +238,7 @@ public class Apps extends Activity {
 					else {
 						entryView.setVisibility(View.VISIBLE);
 						tv.setText(a.name);
+//						tv.setScaleX(0.5f);
 						if (icons) {
 							setIcon(img, a);
 						}
@@ -254,15 +249,30 @@ public class Apps extends Activity {
 						entryView.setOnLongClickListener(onLongClickListener);
 					}
 				}
-				for (int i = l.entries.length ; i < LineData.MAX_BUTTONS ; i++) {
-					View entryView = v.findViewById(LineData.IDs[i]);
-					entryView.setVisibility(View.GONE);
-					entryView.setOnClickListener(null);
-					entryView.setOnLongClickListener(null);
-					entryView.setTag(null);
-				}
+//				for (int i = ICONS_PER_LINE; i < ICONS_PER_LINE ; i++) {
+//					View entryView = v.findViewById(IDs[i]);
+//					entryView.setVisibility(View.GONE);
+//					entryView.setOnClickListener(null);
+//					entryView.setOnLongClickListener(null);
+//					entryView.setTag(null);
+//				}
 
 				return v;
+			}
+
+			@Override
+			public int getCount() {
+				return (curCatData.size() + ICONS_PER_LINE - 1)/ICONS_PER_LINE;
+			}
+
+			@Override
+			public Object getItem(int position) {
+				return null;
+			}
+
+			@Override
+			public long getItemId(int position) {
+				return 0;
 			}			
 
 		};
