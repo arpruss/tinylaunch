@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      android:versionCode="7"
-      android:versionName="0.07" package="mobi.omegacentauri.TinyLaunch"
+      android:versionCode="9"
+      android:versionName="0.09" package="mobi.omegacentauri.TinyLaunch"
       >
 
     <!--   			  android:configChanges="keyboard|keyboardHidden|orientation" -->
 
-	<uses-sdk android:minSdkVersion="3" android:targetSdkVersion="18"/>
+	<uses-sdk android:minSdkVersion="3" android:targetSdkVersion="10"/>
 
           <supports-screens android:resizeable="true"
                   android:smallScreens="true"
@@ -15,7 +15,7 @@
                   android:xlargeScreens="true"
                   android:anyDensity="true"/>
         
-  <application android:label="TinyLaunch">
+  <application android:label="TinyLaunch" android:icon="@drawable/icon">
         
  		<activity android:name=".Options" android:label="Options" />
         <activity android:name="mobi.omegacentauri.TinyLaunch.Apps"
