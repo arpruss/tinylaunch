@@ -1,4 +1,4 @@
-package mobi.omegacentauri.TinyLaunch;
+ 	package mobi.omegacentauri.TinyLaunch;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -462,6 +462,8 @@ public class Apps extends Activity {
 		options.registerOnSharedPreferenceChangeListener(prefListener);
 
 		
+		if (options.getBoolean(Options.PREF_LIGHT, false))
+			setTheme(android.R.style.Theme_Light);
 		setContentView(R.layout.apps);
 
 		//       getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD);
@@ -551,7 +553,15 @@ public class Apps extends Activity {
 		super.onResume();
 
 		//		Log.v("TinyLaunch", "onResume");
-
+		
+		boolean light = options.getBoolean(Options.PREF_LIGHT, false);
+		if (options.getBoolean(Options.PREF_PREV_LIGHT, false) !=
+			light) {
+			options.edit().putBoolean(Options.PREF_PREV_LIGHT, light).commit();
+			Intent i = getIntent();
+			finish();
+			startActivity(i);
+		}
 		if (options.getBoolean(Options.PREF_PORTRAIT, false))
 			setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
 		else

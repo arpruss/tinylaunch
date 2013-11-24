@@ -12,6 +12,8 @@ public class Options extends PreferenceActivity {
 	public static final String PREF_CATEGORY = "category";
 	public static final String PREF_DIRTY = "dirty";
 	public static final String PREF_PORTRAIT = "portrait";
+	public static final String PREF_LIGHT = "light";
+	public static final String PREF_PREV_LIGHT = "prevLight";
 	
 	@SuppressWarnings("deprecation")
 	@Override
