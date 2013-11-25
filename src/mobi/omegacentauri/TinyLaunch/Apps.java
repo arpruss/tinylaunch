@@ -17,6 +17,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -58,6 +59,7 @@ public class Apps extends Activity {
 	public int[] IDs = {R.id.button1, R.id.button2, R.id.button3, R.id.button4};
 	GetApps scanner = null;
 	private OnSharedPreferenceChangeListener prefListener;
+	private boolean light;
 
 	//	private void message(String title, String msg) {
 	//		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
@@ -238,7 +240,8 @@ public class Apps extends Activity {
 					else {
 						entryView.setVisibility(View.VISIBLE);
 						tv.setText(a.name);
-//						tv.setScaleX(0.5f);
+						if (light)
+							tv.setTextColor(Color.BLACK);
 						if (icons) {
 							setIcon(img, a);
 						}
@@ -280,6 +283,8 @@ public class Apps extends Activity {
 		list.setAdapter(adapter);
 		list.setOnItemClickListener(null);
 		list.setOnItemLongClickListener(null);
+		if (light)
+			list.setBackgroundColor(Color.WHITE);
 		list.setDivider(null);
 	}
 
@@ -307,6 +312,8 @@ public class Apps extends Activity {
 
 				TextView tv = (TextView)v.findViewById(R.id.text);
 				tv.setText(a.name);
+				if (light)
+					tv.setTextColor(Color.BLACK);
 				ImageView img = (ImageView)v.findViewById(R.id.icon);
 				if (icons) {
 					setIcon(img,a);
@@ -321,7 +328,10 @@ public class Apps extends Activity {
 		};
 
 		list.setAdapter(adapter);
-		list.setDivider(getResources().getDrawable(android.R.drawable.divider_horizontal_bright));
+		if (light)
+			list.setBackgroundColor(Color.WHITE);
+		list.setDivider(getResources().getDrawable(
+				light ? android.R.drawable.divider_horizontal_dark : android.R.drawable.divider_horizontal_bright));
 
 		final ArrayAdapter<AppData> adapterSaved = adapter;
 
@@ -444,7 +454,7 @@ public class Apps extends Activity {
 		super.onCreate(savedInstanceState);
 
 		options = PreferenceManager.getDefaultSharedPreferences(this);
-		//packageManager = getPackageManager();
+		
 		prefListener = new OnSharedPreferenceChangeListener() {			
 			@Override
 			public void onSharedPreferenceChanged(SharedPreferences sharedPreferences,
@@ -464,9 +474,8 @@ public class Apps extends Activity {
 		
 		if (options.getBoolean(Options.PREF_LIGHT, false))
 			setTheme(android.R.style.Theme_Light);
-		setContentView(R.layout.apps);
 
-		//       getWindow().setType(WindowManager.LayoutParams.TYPE_KEYGUARD);
+		setContentView(R.layout.apps);
 
 		list = (ListView)findViewById(R.id.apps);
 
@@ -554,7 +563,7 @@ public class Apps extends Activity {
 
 		//		Log.v("TinyLaunch", "onResume");
 		
-		boolean light = options.getBoolean(Options.PREF_LIGHT, false);
+	    light = options.getBoolean(Options.PREF_LIGHT, false);
 		if (options.getBoolean(Options.PREF_PREV_LIGHT, false) !=
 			light) {
 			options.edit().putBoolean(Options.PREF_PREV_LIGHT, light).commit();
