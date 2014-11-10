@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      android:versionCode="11"
-      android:versionName="0.11" package="mobi.omegacentauri.TinyLaunch"
+      android:versionCode="12"
+      android:versionName="0.12" package="mobi.omegacentauri.TinyLaunch"
       >
 
     <!--   			  android:configChanges="keyboard|keyboardHidden|orientation" -->
@@ -20,7 +20,8 @@
  		<activity android:name=".Options" android:label="Options" />
         <activity android:name="mobi.omegacentauri.TinyLaunch.Apps"
       			  android:configChanges="keyboard|keyboardHidden|orientation"
-                  android:launchMode="singleTask"
+                  android:launchMode="singleInstance"
+                  android:stateNotNeeded="true"
                   android:theme="@android:style/Theme.NoTitleBar"
                   android:label="TinyLaunch">
             <intent-filter>
@@ -28,10 +29,7 @@
                 <category android:name="android.intent.category.HOME" />
                 <category android:name="android.intent.category.DEFAULT" />
                 </intent-filter>
-    <!--                          <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" /> 
-            </intent-filter>  -->
+       
         </activity>
                 <receiver android:name="DirtinessReceiver">
         <intent-filter>

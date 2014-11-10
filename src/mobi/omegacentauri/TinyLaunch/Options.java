@@ -14,6 +14,8 @@ public class Options extends PreferenceActivity {
 	public static final String PREF_PORTRAIT = "portrait";
 	public static final String PREF_LIGHT = "light";
 	public static final String PREF_PREV_LIGHT = "prevLight";
+	public static final String PREF_COLUMNS = "columns";
+	public static final String PREF_CHILD_MODE = "childMode";
 	
 	@SuppressWarnings("deprecation")
 	@Override
