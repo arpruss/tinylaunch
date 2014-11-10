@@ -15,4 +15,8 @@
 <include android:id="@+id/button3" layout="@layout/iconbutton"/>
 <include layout="@layout/spacer"/>
 <include android:id="@+id/button4" layout="@layout/iconbutton"/>
+<include android:id="@+id/spacer5" layout="@layout/spacer"/>
+<include android:id="@+id/button5" layout="@layout/iconbutton"/>
+<include android:id="@+id/spacer6" layout="@layout/spacer"/>
+<include android:id="@+id/button6" layout="@layout/iconbutton"/>
 </LinearLayout>

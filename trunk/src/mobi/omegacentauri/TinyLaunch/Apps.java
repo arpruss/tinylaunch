@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
@@ -24,6 +23,7 @@ import android.os.AsyncTask;
 import android.os.AsyncTask.Status;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.text.InputType;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -53,13 +53,15 @@ public class Apps extends Activity {
 	final static String PREF_APPS = "apps";
 	//private PackageManager packageManager;
 	private Spinner spin;
-	public static final int ICONS_PER_LINE = 4;
+	public int iconsPerLine = 4;
 	public static final int MIN_BUTTONS = 4;
 	public static final int MAX_BUTTONS = 4;
-	public int[] IDs = {R.id.button1, R.id.button2, R.id.button3, R.id.button4};
+	public int[] IDs = {R.id.button1, R.id.button2, R.id.button3, R.id.button4, R.id.button5, R.id.button6};
+	public int[] spacerIDs = {0, 0, 0, 0, R.id.spacer5, R.id.spacer6};
 	GetApps scanner = null;
 	private OnSharedPreferenceChangeListener prefListener;
 	private boolean light;
+	private boolean homePressed;
 
 	//	private void message(String title, String msg) {
 	//		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
@@ -113,7 +115,10 @@ public class Apps extends Activity {
 
 	public void setSpinner() {
 		spin = (Spinner)findViewById(R.id.category);
-		final ArrayList<String> cats = categories.getCategories();
+		final ArrayList<String> cats = new ArrayList<String>();
+		cats.addAll(categories.getCategories());
+		if (options.getBoolean(Options.PREF_CHILD_MODE, false))
+			cats.remove(Categories.HIDDEN);
 		ArrayAdapter<String> aa = new ArrayAdapter<String>(this, 
 				android.R.layout.simple_spinner_item,
 				cats);
@@ -205,7 +210,6 @@ public class Apps extends Activity {
 				return false;
 			}
 
-			@SuppressLint("NewApi")
 			public View getView(int position, View convertView, ViewGroup parent) {
 				View v;				
 
@@ -216,9 +220,9 @@ public class Apps extends Activity {
 					v = convertView;
 				}
 
-				for (int i = 0; i < ICONS_PER_LINE ; i++) {
+				for (int i = 0; i < iconsPerLine ; i++) {
 					View entryView = v.findViewById(IDs[i]);
-					int entryPos = position * ICONS_PER_LINE + i;
+					int entryPos = position * iconsPerLine + i;
 					AppData a;
 					if (entryPos < curCatData.size())
 						a = curCatData.get(entryPos);
@@ -252,20 +256,23 @@ public class Apps extends Activity {
 						entryView.setOnLongClickListener(onLongClickListener);
 					}
 				}
-//				for (int i = ICONS_PER_LINE; i < ICONS_PER_LINE ; i++) {
-//					View entryView = v.findViewById(IDs[i]);
-//					entryView.setVisibility(View.GONE);
-//					entryView.setOnClickListener(null);
-//					entryView.setOnLongClickListener(null);
-//					entryView.setTag(null);
-//				}
+
+				for (int i = iconsPerLine; i < IDs.length ; i++) {
+					View entryView = v.findViewById(IDs[i]);
+					entryView.setVisibility(View.GONE);
+					entryView.setOnClickListener(null);
+					entryView.setOnLongClickListener(null);
+					entryView.setTag(null);
+					if (spacerIDs[i] != 0)
+						v.findViewById(spacerIDs[i]).setVisibility(View.GONE);
+				}
 
 				return v;
 			}
 
 			@Override
 			public int getCount() {
-				return (curCatData.size() + ICONS_PER_LINE - 1)/ICONS_PER_LINE;
+				return (curCatData.size() + iconsPerLine - 1)/iconsPerLine;
 			}
 
 			@Override
@@ -431,6 +438,27 @@ public class Apps extends Activity {
 		}
 		builder.create().show();
 	}
+	
+//	@Override
+//	public boolean dispatchKeyEvent(KeyEvent event) {
+//		Log.v("TinyLaunch", "key "+event);
+//		if (event.getKeyCode() == KeyEvent.KEYCODE_HOME &&
+//				event.getAction() == KeyEvent.ACTION_UP &&
+//				event.getDownTime() < 500) {
+//			categories.setCurCategory(Categories.ALL);
+//			categories.clearHistory();
+//			loadFilteredApps();
+//			setSpinner();
+//			return true;			
+//		}
+//		return super.dispatchKeyEvent(event);
+//	}
+	
+	@Override
+	protected void onNewIntent(Intent intent) {
+		homePressed = true;
+		super.onNewIntent(intent);
+	}
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -448,6 +476,19 @@ public class Apps extends Activity {
 		}
 		return false;
 	}
+	
+	@Override
+	public void onStart() {
+		super.onStart();
+		homePressed = false;
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		options.unregisterOnSharedPreferenceChangeListener(prefListener);
+		prefListener = null;
+	}
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -461,11 +502,11 @@ public class Apps extends Activity {
 					String key) {
 				//Log.v("TinyLaunch", "pref change detected");
 				if (key.equals(Options.PREF_DIRTY) && sharedPreferences.getBoolean(Options.PREF_DIRTY, false)) {
-						if (scanner != null) 
-							scanner = new GetApps(Apps.this);
-						if (scanner.getStatus() != AsyncTask.Status.RUNNING)
-							scanner.execute(false);
+					if (scanner == null || scanner.getStatus() != AsyncTask.Status.RUNNING) {
+						scanner = new GetApps(Apps.this);
+						scanner.execute(false);
 					}
+				}
 			}
 		};
 		
@@ -497,7 +538,10 @@ public class Apps extends Activity {
 				scanner.execute(true);
 			return true;
 		case R.id.options:
-			startActivity(new Intent(this, Options.class));
+			if (options.getBoolean(Options.PREF_CHILD_MODE, false))
+				launchIfNotChild(new Intent(this, Options.class));
+			else
+				startActivity(new Intent(this, Options.class));
 			return true;
 		case R.id.new_category:
 			newCategory();
@@ -519,6 +563,8 @@ public class Apps extends Activity {
 		builder.setTitle("New category");
 		builder.setMessage("Enter name of category:");
 		final EditText inputBox = new EditText(this);
+		inputBox.setInputType(InputType.TYPE_CLASS_TEXT | 
+				InputType.TYPE_TEXT_FLAG_CAP_WORDS);
 		builder.setView(inputBox);
 		builder.setPositiveButton("OK", 
 				new DialogInterface.OnClickListener() {
@@ -526,6 +572,22 @@ public class Apps extends Activity {
 				if (!categories.addCategory(inputBox.getText().toString())) {
 					Toast.makeText(Apps.this, "Name already in use", Toast.LENGTH_LONG).show();
 				}
+			} });
+		builder.show();
+	}
+
+	private void launchIfNotChild(final Intent intent) {
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		builder.setTitle("Child lock");
+		builder.setMessage("Please type in 'I'm an adult'.");
+		final EditText inputBox = new EditText(this);
+		inputBox.setInputType(InputType.TYPE_CLASS_TEXT);
+		builder.setView(inputBox);
+		builder.setPositiveButton("OK", 
+				new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				if (inputBox.getText().toString().equals("I'm an adult"))
+					startActivity(intent);
 			} });
 		builder.show();
 	}
@@ -561,7 +623,9 @@ public class Apps extends Activity {
 	public void onResume() {
 		super.onResume();
 
-		//		Log.v("TinyLaunch", "onResume");
+		//Log.v("TinyLaunch", "onResume");
+		
+		iconsPerLine = Integer.parseInt(options.getString(Options.PREF_COLUMNS, "4"));
 		
 	    light = options.getBoolean(Options.PREF_LIGHT, false);
 		if (options.getBoolean(Options.PREF_PREV_LIGHT, false) !=
@@ -578,6 +642,23 @@ public class Apps extends Activity {
 		
 		loadList(false);
 		boolean needReload = false;
+		
+		if (homePressed) {
+			homePressed = false;
+		
+			if (categories != null) {
+				if (categories.haveCategory(Categories.HOME) && 
+						! categories.getCurCategory().equals(Categories.HOME)) {
+					categories.setCurCategory(Categories.HOME);
+				}
+				else {
+					categories.setCurCategory(Categories.ALL);
+					categories.clearHistory();
+				}
+				loadFilteredApps();
+				setSpinner();
+			}
+		}
 
 		if (map.size() == 0) {
 			needReload = true;
@@ -596,11 +677,10 @@ public class Apps extends Activity {
 
 		if (needReload || map.size() == 0 || options.getBoolean(Options.PREF_DIRTY, false)) {
 			//			Log.v("TinyLaunch", "scan");
-			if (scanner == null)
+			if (scanner == null || scanner.getStatus() != Status.RUNNING) {
 				scanner = new GetApps(this);
-			
-			if (scanner.getStatus() != Status.RUNNING)
 				scanner.execute(false);
+			}
 		}
 	}
 

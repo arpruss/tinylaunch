@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
+         <ListPreference android:title="Number of columns"
+                android:defaultValue="4"
+                android:entries="@array/columns"
+                android:entryValues="@array/columns"
+                android:key="columns"/>
     <CheckBoxPreference
         android:title="Show icons"
         android:defaultValue="true"
@@ -19,4 +24,11 @@
         android:defaultValue="false"
         android:key="light"
         />
+   	<CheckBoxPreference
+   	    android:title="Child mode"
+   	    android:summary="Removes the Hidden category completely from view and requires user to type &quot;I'm an adult&quot; to get into the settings"
+   	    android:defaultValue="false"
+   	    android:key="childMode"
+   	    />
+    
 </PreferenceScreen>

@@ -25,6 +25,7 @@ public class Categories {
 	public static final String ALL = "All";
 	public static final String UNCLASSIFIED = "Unclassified";
 	public static final String HIDDEN = "Hidden";
+	public static final String HOME = "Home";
 	private String curCategory;
 	private ArrayList<String> names;
 	private Map<String,ArrayList<AppData>> categories;
@@ -48,6 +49,10 @@ public class Categories {
 		sortNames();
 
 		curCategory = options.getString(Options.PREF_CATEGORY, ALL);
+	}
+	
+	public boolean haveCategory(String s) {
+		return names.contains(s);
 	}
 	
 	@SuppressWarnings("deprecation")
@@ -357,5 +362,9 @@ public class Categories {
 		sortNames();
 		setCurCategory(c);
 		return true;
+	}
+
+	public void clearHistory() {
+		history = new ArrayList<String>();
 	}
 }
