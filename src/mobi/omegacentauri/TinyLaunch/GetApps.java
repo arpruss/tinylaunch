@@ -17,6 +17,7 @@ import android.graphics.Bitmap.CompressFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.util.Log;
 
 public class GetApps extends AsyncTask<Boolean, Integer, ArrayList<AppData>> {
 	final PackageManager pm;
