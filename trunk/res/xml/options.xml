@@ -11,6 +11,10 @@
         android:defaultValue="true"
         android:key="icons"/>
     <CheckBoxPreference
+        android:title="Large icons"
+        android:defaultValue="false"
+        android:key="large"/>
+    <CheckBoxPreference
     	android:title="Tile view"
     	android:defaultValue="true"
     	android:key="tile"/>
@@ -25,8 +29,8 @@
         android:key="light"
         />
    	<CheckBoxPreference
-   	    android:title="Child mode"
-   	    android:summary="Removes the Hidden category completely from view and requires user to type &quot;I'm an adult&quot; to get into the settings"
+   	    android:title="Toddler mode"
+   	    android:summary="Removes the Hidden category completely from view and requires user to type &quot;not a toddler&quot; to get into the settings"
    	    android:defaultValue="false"
    	    android:key="childMode"
    	    />

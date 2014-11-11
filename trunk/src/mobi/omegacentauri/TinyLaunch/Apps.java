@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
@@ -202,6 +203,9 @@ public class Apps extends Activity {
 			}
 
 		};
+		
+		final boolean large = options.getBoolean(Options.PREF_LARGE, false);
+		final int iconSize = (int)((large ? 64 : 48) * getResources().getDisplayMetrics().density + 0.5);
 
 		BaseAdapter adapter = new BaseAdapter() {
 
@@ -247,6 +251,13 @@ public class Apps extends Activity {
 						if (light)
 							tv.setTextColor(Color.BLACK);
 						if (icons) {
+							if (large) {
+								ViewGroup.LayoutParams p = img.getLayoutParams();
+								p.width = iconSize;
+								p.height = iconSize;
+								img.setLayoutParams(p);
+							}					
+
 							setIcon(img, a);
 						}
 						else {
@@ -299,6 +310,8 @@ public class Apps extends Activity {
 		list.setAdapter(null);
 
 		final boolean icons = options.getBoolean(Options.PREF_ICONS, true);
+		final boolean large = options.getBoolean(Options.PREF_LARGE, false);
+		final int iconSize = (int)((large ? 64 : 48) * getResources().getDisplayMetrics().density + 0.5);
 
 		ArrayAdapter<AppData> adapter = 
 				new ArrayAdapter<AppData>(this, 
@@ -322,7 +335,15 @@ public class Apps extends Activity {
 				if (light)
 					tv.setTextColor(Color.BLACK);
 				ImageView img = (ImageView)v.findViewById(R.id.icon);
+
 				if (icons) {
+					if (large) {
+						ViewGroup.LayoutParams p = img.getLayoutParams();
+						p.width = iconSize;
+						p.height = iconSize;
+						img.setLayoutParams(p);
+					}					
+
 					setIcon(img,a);
 				}
 				else {
@@ -365,6 +386,10 @@ public class Apps extends Activity {
 
 	void setIcon(ImageView img, AppData a) {
 		File iconFile = MyCache.getIconFile(Apps.this, a.component);
+//		if (true /*options.getBoolean(Options.PREF_BIG_ICONS, false)*/) {
+//			img.setMinimumHeight(96);
+//			img.setMinimumHeight(96);
+//		}
 
 		if (iconFile.exists()) {
 			try {
@@ -532,10 +557,10 @@ public class Apps extends Activity {
 		//    		(new GetApps(this, false)).execute();
 		//    		return true;
 		case R.id.full_scan:
-			if (scanner == null)
-				scanner = new GetApps(this);
-			if (scanner.getStatus() != AsyncTask.Status.RUNNING) 
-				scanner.execute(true);
+			if (scanner != null && scanner.getStatus() == AsyncTask.Status.RUNNING)
+				return true;
+			scanner = new GetApps(this);
+			scanner.execute(true);
 			return true;
 		case R.id.options:
 			if (options.getBoolean(Options.PREF_CHILD_MODE, false))
@@ -576,17 +601,18 @@ public class Apps extends Activity {
 		builder.show();
 	}
 
+	@SuppressLint("DefaultLocale")
 	private void launchIfNotChild(final Intent intent) {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle("Child lock");
-		builder.setMessage("Please type in 'I'm an adult'.");
+		builder.setMessage("Please type in: \"not a toddler\".");
 		final EditText inputBox = new EditText(this);
 		inputBox.setInputType(InputType.TYPE_CLASS_TEXT);
 		builder.setView(inputBox);
 		builder.setPositiveButton("OK", 
 				new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
-				if (inputBox.getText().toString().equals("I'm an adult"))
+				if (inputBox.getText().toString().toLowerCase().equals("not a toddler"))
 					startActivity(intent);
 			} });
 		builder.show();
