@@ -30,7 +30,7 @@
         />
    	<CheckBoxPreference
    	    android:title="Toddler mode"
-   	    android:summary="Removes the Hidden category completely from view and requires user to type &quot;not a toddler&quot; to get into the settings"
+   	    android:summary="Removes the Hidden category completely from view, disables editing and requires user to type &quot;not toddler&quot; to get into the settings"
    	    android:defaultValue="false"
    	    android:key="childMode"
    	    />

@@ -63,6 +63,7 @@ public class Apps extends Activity {
 	private OnSharedPreferenceChangeListener prefListener;
 	private boolean light;
 	private boolean homePressed;
+	private boolean childMode;
 
 	//	private void message(String title, String msg) {
 	//		AlertDialog alertDialog = new AlertDialog.Builder(this).create();
@@ -118,7 +119,7 @@ public class Apps extends Activity {
 		spin = (Spinner)findViewById(R.id.category);
 		final ArrayList<String> cats = new ArrayList<String>();
 		cats.addAll(categories.getCategories());
-		if (options.getBoolean(Options.PREF_CHILD_MODE, false))
+		if (childMode)
 			cats.remove(Categories.HIDDEN);
 		ArrayAdapter<String> aa = new ArrayAdapter<String>(this, 
 				android.R.layout.simple_spinner_item,
@@ -409,6 +410,9 @@ public class Apps extends Activity {
 
 
 	protected void itemEdit(final AppData item) {
+		if (childMode)
+			return;
+		
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
 		builder.setTitle(item.name);
@@ -484,16 +488,25 @@ public class Apps extends Activity {
 		homePressed = true;
 		super.onNewIntent(intent);
 	}
+	
+	void menu() {
+		if (childMode)
+			menuIfNotChild();
+		else
+			openOptionsMenu();
+	}
+	
+	public void onMenuButton(View v) {
+		menu();
+	}
 
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		/* if (keyCode == KeyEvent.KEYCODE_HOME) {
-			categories.setCurCategory(Categories.ALL);
-			loadFilteredApps();
-			setSpinner();
+		if (keyCode == KeyEvent.KEYCODE_MENU) {
+			menu();
 			return true;
 		}
-		else */ if (keyCode == KeyEvent.KEYCODE_BACK) {
+		else if (keyCode == KeyEvent.KEYCODE_BACK) {
 			categories.prevCategory();
 			loadFilteredApps();
 			setSpinner();
@@ -563,10 +576,7 @@ public class Apps extends Activity {
 			scanner.execute(true);
 			return true;
 		case R.id.options:
-			if (options.getBoolean(Options.PREF_CHILD_MODE, false))
-				launchIfNotChild(new Intent(this, Options.class));
-			else
-				startActivity(new Intent(this, Options.class));
+			startActivity(new Intent(this, Options.class));
 			return true;
 		case R.id.new_category:
 			newCategory();
@@ -602,19 +612,20 @@ public class Apps extends Activity {
 	}
 
 	@SuppressLint("DefaultLocale")
-	private void launchIfNotChild(final Intent intent) {
+	private void menuIfNotChild() {
 		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		builder.setTitle("Child lock");
-		builder.setMessage("Please type in: \"not a toddler\".");
+		builder.setMessage("Please type in: \"not toddler\".");
 		final EditText inputBox = new EditText(this);
 		inputBox.setInputType(InputType.TYPE_CLASS_TEXT);
 		builder.setView(inputBox);
 		builder.setPositiveButton("OK", 
 				new DialogInterface.OnClickListener() {
 			public void onClick(DialogInterface dialog, int which) {
-				if (inputBox.getText().toString().toLowerCase().equals("not a toddler"))
-					startActivity(intent);
+				if (inputBox.getText().toString().toLowerCase().equals("not toddler"))
+					openOptionsMenu();
 			} });
+		builder.setCancelable(true);
 		builder.show();
 	}
 
@@ -651,6 +662,7 @@ public class Apps extends Activity {
 
 		//Log.v("TinyLaunch", "onResume");
 		
+		childMode = options.getBoolean(Options.PREF_CHILD_MODE, false);
 		iconsPerLine = Integer.parseInt(options.getString(Options.PREF_COLUMNS, "4"));
 		
 	    light = options.getBoolean(Options.PREF_LIGHT, false);

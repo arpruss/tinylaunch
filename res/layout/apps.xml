@@ -5,11 +5,24 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
+    <LinearLayout 
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
     <Spinner
         android:id="@+id/category"
-        android:layout_width="fill_parent"
+        android:layout_width="0dp"
+        android:layout_weight="1"
         android:layout_height="wrap_content" 
         />
+    <Button 
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+    	android:layout_gravity="center_vertical"
+    	android:onClick="onMenuButton"
+        android:text="..."
+        />
+    </LinearLayout>
 
     <ListView
         android:id="@+id/apps"
